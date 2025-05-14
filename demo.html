@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	
+		<meta charset="UTF-8">
+		<meta name="viewport" content="user-scalable=yes, width=device-width, initial-scale=0.80, minimum-scale=0.75, maximum-scale=1.0"/>
+		<meta name="google-site-verification" content="EYxQGXvx_TFMhVJT9UELPA8aoOIBnjt_QR9szmBkuX4" />
+		
+		<title>Flipnote Organizer - Demonstration</title>
+		<link rel="tab icon" href="favicon.ico">
+		<link rel="icon" href="favicon.ico">
+				
+		<meta property="og:title" content="Flipnote Organizer - Demonstration"/>
+		<meta property="og:description" content="Keep your Flipnotes and folders nice and tidy with the Flipnote Organizer!"/>
+		<meta property="og:url" content="https://flipnote.famicomcd.org/"/>
+		<meta data-react-helmet="true" name="theme-color" content="#fb6100"/>
+		
+		<link rel="stylesheet" href="common/global.css">
+		
+	</head>
+	
+		<body>
+		
+		<div class="therealheader">
+			<div class="headerbuttongroup">
+				<a href="https://flipnote.famicomcd.org/"><img class="logo" src="graphics/logo.svg"></a>
+				
+				<a href="https://flipnote.famicomcd.org/credits" class="headerbutton">Credits</a>
+				<!-- <a href="howtouse" class="headerbutton">How to Use</a> -->
+				<a href="https://flipnote.famicomcd.org/demo" class="headerbutton demo">Demonstration</a>
+				<a href="https://flipnote.famicomcd.org/" class="headerbutton organize">Organizer</a>
+			</div>
+		</div>
+			
+		<img id="loadingfrog" src="graphics/FrogLoad.gif">
+		<div id="closePlayer" class="slide-button">Close Player</div>
+		<div id="returnTop" class="slide-button">Top ▲</div>
+		<flipnote-player id="flipnotePlayer" style="display:none;"></flipnote-player>
+
+		<div class="header">
+			
+			<div id="flipnotesListHeader"></div>
+		</div>
+		
+		<div class="showflipnotes">
+			<div id="headbuttons">
+				  <div id="folderSelectWrapper">
+					<div id="folderSelect">Folder</div>
+					<div id="folderList" style="display: none;"></div>
+				</div>
+				<div id="dupbutton"></div>
+				<span class="right" id="folderCount"></span>
+			</div>
+
+			
+			<div id="duplicateNotice"></div>
+			<div id="flipnotesList"></div>
+		</div>
+
+	</body>
+
+	<script src="https://cdn.jsdelivr.net/npm/flipnote.js@6/dist/flipnote.webcomponent.min.js"></script>
+	<!-- Kinda forgot that the flipnote.js library existed when I started, so I'm just using it for the player. oops -->
+	<script src="common/organizer.js"></script>
+	<script src="common/democopy.js"></script> 
+	<!-- the demonstration version works fine enough even -->
+
+	<script>
+
+	
+	</script>
+
+
+</html>

@@ -1,0 +1,382 @@
+		  	@font-face {
+			font-family: "Seurat Pro";
+			src: url(https://famicomcd.org/fonts/Seurat-Pro.woff2);
+			}
+			
+			a:link {
+			text-decoration:none;
+			color:white;
+			}
+			
+			a:active {
+			text-decoration:none;
+			color:white;
+			}
+			
+			a:visited {
+			text-decoration:none;
+			color:white;
+			}
+			
+			body { 
+			font-family: "Seurat Pro", arial; 
+			margin:0;
+			background-image: url('../graphics/notepadbg.png');
+			background-size:20px;
+			}
+			
+			.header {
+			background-color:#fb6100;
+			padding:1%;
+			color: white;
+			}
+			
+			#folderinputbox {
+			border: 4px dashed white;
+			padding: 1%;
+			text-align: center;
+			width: 45%;
+			margin: 0 auto;
+			border-radius:30px;
+			background-color:;
+			transition:ease-in-out 0.2s;
+			opacity:0.9;
+			font-size:18px;
+			}
+			
+			#folderinputbox:hover {
+			opacity:1 !important;
+			background-color:#ff7824;
+			}
+			
+			#headbuttons {
+			align-items: center;
+			margin:5px 0;
+			display:none;
+			}
+			
+			.headbuttonvisible {
+			display:block ruby !important;
+			}
+			
+			#flipnotesList {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+			gap:15px;
+			}
+			
+			.flipnote {
+			display: flex;
+			align-items: center;
+			margin: 0 auto;
+			width: 330px;
+			}
+			
+			#thumb {
+			width: 64px;
+			height: 48px;
+			margin-right: 1rem;
+			image-rendering: pixelated;
+			border: outset 1px #797979;
+			box-shadow: 3px 3px 2px rgba(11, 4, 60, 0.3);
+			cursor:pointer;
+			}
+			
+			#thumb, #loadingfrog {
+			image-rendering: pixelated;
+			}		
+
+			#thumb:active {
+			box-shadow: 1px 1px 0px rgba(11, 4, 60, 0.3);
+			transform: scale(0.99) translate(2px, 2px);
+			filter: contrast(1.5);
+			}
+			
+			#flipnotesListHeader {
+			text-align:center;
+			margin-top: 10px;
+			}
+			
+			.nomargin {
+			margin:0;
+			}
+			
+			.icons {
+			width: 16px;
+			height: 16px;
+			margin-left: 5px;
+			}
+			
+			.filename {
+			font-size:80%;
+			color:gray;
+			}
+			
+			.dupFlex {
+			display:inline-flex;
+			margin: 5px 15px 0px 0;
+			}
+			
+			.right {
+			float:right;
+			display:block;
+			color: #fb6100;
+			}
+			
+			.showflipnotes {
+			margin:0 auto;
+			width:80%;
+			}
+			
+			.dupbutton, #folderSelect {
+			border: solid 2px #fbcb79;
+			padding: 1px 20px;
+			background-color: white;
+			}
+			
+			.dupbutton, #folderSelect, #folderList div {
+			text-align: center;
+			color: #fb6100;
+			}
+			
+			.dupbutton, #folderSelect, #folderList div, #folderinputbox, #closePlayer, #returnTop, .headerbutton {
+			cursor:pointer;
+			user-select:none;
+			}
+			
+			.dupbutton:active, #folderSelect:active, #folderList div:active {
+			background-color: #e3dbaa;
+			border-color:black !important;
+			color: #ba2000;
+			}
+			
+			#folderList {
+			position: absolute;
+			padding-bottom:20px;
+			z-index:100;
+			}
+			
+			#folderList div {
+			background-color:#fbfbe3;
+			border:solid 4px #fb9a49;
+			border-radius:5px;
+			width: 192px;
+			margin: 5px 0;
+			}
+			
+			.duplist {
+			margin-bottom:20px;
+			padding-bottom: 20px;
+			border-bottom: solid 3px #fb6100;
+			}
+			
+			#flipnotesList {
+			margin:10px 0 20px 0;
+			}
+			
+			.dupflips {
+			width: fit-content;
+			margin: 0 auto;
+			}
+			
+			#loadingfrog {
+			position:fixed;
+			display:none;
+			right:40px;
+			bottom:50px;
+			height:70px;
+			}
+			
+			.spinofficon {
+			width:20px;
+			}
+			
+			#flipnotePlayer {
+			background-color:white;
+			padding:10px;
+			position: fixed;
+			border-radius:9px;
+			top: 40%;
+			left: 40%;
+			z-index: 200;
+			border: solid 2px #fbcb79;
+			}
+			
+			#closePlayer, #returnTop {
+			bottom:0;
+			z-index:202;
+			position: fixed;
+			background-color:#fb6100;
+			padding:10px;
+			color:white;
+			border-radius:15px 15px 0 0;
+			text-align:center;
+			font-size:18px;
+			}
+			
+			.slide-button {
+			opacity: 0;
+			transform: translateY(20px);
+			transition: opacity 0.3s ease, transform 0.3s ease;
+			pointer-events:none;
+			}
+			
+			.slide-button.visible {
+			opacity: 1;
+			transform: translateY(0);
+			pointer-events:auto;
+			}
+			
+			#closePlayer {
+			left:0;
+			width:135px;
+			}
+			
+			#returnTop {
+			right:0;
+			width:85px;
+			}
+			
+			#closePlayer:active, #returnTop:active {
+			color:#302820;
+			border: solid #302820;
+			border-width:4px 4px 0 4px;
+			padding:6px 6px 10px 6px;
+			}
+			
+			#folderSelectWrapper {
+			position: relative;
+			width: 200px;
+			}
+			
+			flipnote-player::part(Controls__frameCounter) {
+			user-select:none;
+			}
+			
+			flipnote-player {
+			--flipnote-player-focus-outline:none;
+			--flipnote-player-font-family: "Seurat Pro", arial;
+			}
+			
+			.playeractive {
+			outline: solid 4px blue;
+			border-radius:1px;
+			border:solid 1px blue;
+			}
+			
+			.playeractive:active {
+			box-shadow:none !important;
+			transform: none !important;
+			filter: none !important;
+			}
+			
+			.playstateicon {
+			position:absolute;
+			z-index:20;
+			transform: translate(175%, 57%);
+			width:24px;
+			}
+			
+			.playstateicon:active {
+			filter: brightness(80%);
+			}
+			
+			.headerbutton {
+			margin: 2px 5px;
+			padding:10px 20px;
+			border-radius:20px;
+			transition: ease-in-out 0.2s;
+			float:right;
+			font-size:18px;
+			}
+			
+			.headerbutton:hover {
+			background-color:#ff8539;
+			transform: scale(1.1);
+			}
+			
+			.headerbutton:active {
+			opacity:0.7;
+			transform: scale(0.95);
+			}
+			
+			.headerbuttongroup {
+			width: 80%;
+			margin: 0 auto;
+			}
+			
+			.therealheader {
+			background-color:#fb6100;
+			z-index:2000;
+			position:relative;
+			border-bottom: solid 4px #ba2000;
+			padding: 15px 0;
+			}
+			
+			.logo {
+			height:50px;
+			}
+			
+			@media (max-width: 1000px) {
+			
+			.showflipnotes {
+			width: 95%;
+			}
+			
+			.headerbuttongroup {
+			width: 95%;
+			}
+			
+			#folderinputbox {
+			width: 70%;
+			padding: 2% 0;
+			margin: 1% auto;
+			}
+			
+			
+			}
+			
+			
+			@media (max-width: 740px) {
+			
+			.headbuttonvisible {
+			display: flex !important;
+			}
+			
+			.right {
+			display:none;
+			}
+			
+			#folderSelectWrapper, #dupbutton {
+			padding:4px;
+			}
+			
+			#folderSelectWrapper {
+			flex-grow:1;
+			width: 140px;
+			}
+			
+			#dupbutton {
+			flex-grow:5;
+			}
+			
+			#folderinputbox {
+			width: 90%;
+			padding: 4% 0;
+			margin: 2% auto;
+			}
+			
+			.dupflips {
+			width:min-content;
+			}
+			
+			.logo {
+			height:40px;
+			}
+			
+			.demo, .organize {
+			display:none;
+			}
+			
+			
+			}
