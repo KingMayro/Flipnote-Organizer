@@ -406,7 +406,7 @@
 
 	folderBox.addEventListener("drop", async (e) => {
 	  e.preventDefault();
-	  folderBox.style.opacity = "0.5";
+	  folderBox.style.opacity = "0.4";
 
 	  const items = e.dataTransfer.items;
 	  const files = [];
@@ -450,6 +450,23 @@
 	  await handleFolder(files);
 	});
 
+
+	function isgoodbrowser() {
+	  return navigator.userAgent.toLowerCase().includes("firefox");
+	}
+
+	function changeinputtext() {
+	  const folderInputBox = document.getElementById("folderinputbox");
+	  
+	  if (isgoodbrowser()) {
+		folderInputBox.textContent = "Click or drag and drop a folder in here!!!";
+	  } else {
+		folderInputBox.textContent = "Click here to load a folder!!!";
+	  }
+	}
+
+	changeinputtext();
+
 	
 async function handleFolder(files) {
   const rootDirName = files[0].webkitRelativePath.split("/")[0];
@@ -472,7 +489,7 @@ async function handleFolder(files) {
     filenameMap[nameKey].push({ file, folder });
   }
   
-  
+document.getElementById("flipnotesList").classList.add("flipnotesList");
 
 const toggleContainer = document.getElementById("dupbutton");
 const dupDiv = document.getElementById("duplicateNotice");
