@@ -226,51 +226,73 @@
 	player.addEventListener('pause', updatePlayPauseIcon);
 
 
-    let isDragging = false;
-    let offsetX, offsetY;
-    let initialX, initialY;
-    const moveThreshold = 5;
-    let draggingSlider = false;
+	let isDragging = false;
+	let offsetX, offsetY;
+	let initialX, initialY;
+	const moveThreshold = 5;
 
-	player.addEventListener('mousedown', (e) => {
-	  const path = e.composedPath();
-	  const interactingWithSlider = path.some(el => 
+	function getEventCoords(e) {
+	  if (e.touches && e.touches.length > 0) {
+		return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+	  } else {
+		return { x: e.clientX, y: e.clientY };
+	  }
+	}
+
+	function startDrag(e) {
+	  const path = e.composedPath ? e.composedPath() : (e.path || []);
+	  const interactingWithSlider = path.some(el =>
 		el.tagName && el.tagName.toLowerCase() === 'flipnote-player-slider'
 	  );
 
-	  if (interactingWithSlider) {
-		return;
+	  if (interactingWithSlider) return;
+
+	  const coords = getEventCoords(e);
+	  isDragging = true;
+	  initialX = coords.x;
+	  initialY = coords.y;
+	  offsetX = coords.x - player.offsetLeft;
+	  offsetY = coords.y - player.offsetTop;
+
+	  if (e.type === 'touchstart') {
+		e.preventDefault();
+	  }
+	}
+
+	function onDrag(e) {
+	  if (!isDragging) return;
+
+	  const coords = getEventCoords(e);
+	  const deltaX = coords.x - initialX;
+	  const deltaY = coords.y - initialY;
+
+	  player.style.left = `${coords.x - offsetX}px`;
+	  player.style.top = `${coords.y - offsetY}px`;
+
+	  if (Math.abs(deltaX) > moveThreshold || Math.abs(deltaY) > moveThreshold) {
+		player.style.pointerEvents = 'none';
 	  }
 
-	  isDragging = true;
-	  initialX = e.clientX;
-	  initialY = e.clientY;
-	  offsetX = e.clientX - player.offsetLeft;
-	  offsetY = e.clientY - player.offsetTop;
+	  if (e.type === 'touchmove') {
+		e.preventDefault();
+	  }
+	}
 
-	});
+	function stopDrag() {
+	  if (isDragging) {
+		player.style.pointerEvents = 'auto';
+		isDragging = false;
+	  }
+	}
 
+	player.addEventListener('mousedown', startDrag);
+	document.addEventListener('mousemove', onDrag);
+	document.addEventListener('mouseup', stopDrag);
 
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - initialX;
-        const deltaY = e.clientY - initialY;
+	player.addEventListener('touchstart', startDrag, { passive: false });
+	document.addEventListener('touchmove', onDrag, { passive: false });
+	document.addEventListener('touchend', stopDrag);
 
-        player.style.left = `${e.clientX - offsetX}px`;
-        player.style.top = `${e.clientY - offsetY}px`;
-
-        if (Math.abs(deltaX) > moveThreshold || Math.abs(deltaY) > moveThreshold) {
-          player.style.pointerEvents = 'none'; 
-        }
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (isDragging) {
-        player.style.pointerEvents = 'auto';
-      }
-      isDragging = false;
-    });
 
 	function decodeThumbnail(arrayBuffer) {
 	  const data = new Uint8Array(arrayBuffer, 0xA0, 1536);
