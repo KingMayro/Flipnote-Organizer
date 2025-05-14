@@ -14,8 +14,8 @@
 	const pauseSound = new Audio("sound/SE_SY_MOVIE_STOP.wav");
 	const folderListOpenSound = new Audio("sound/SE_SY_POPUP.wav");
 	const folderListCloseSound = new Audio("sound/SE_SY_POPUP_SELECT.wav");
-	const dupListOpenSound = new Audio("sound/SE_SY_PHOTO_CAPTURE.wav");
-	const dupListCloseSound = new Audio("sound/SE_SY_PHOTO_CANCEL.wav");
+	const dupListOpenSound = new Audio("sound/SE_SY_FRAME_BUTTON.wav");
+	const dupListCloseSound = new Audio("sound/SE_SY_FRAME_RETURN.wav");
 
 
 	const releaseSounds = {
