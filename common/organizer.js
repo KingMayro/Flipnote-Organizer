@@ -455,7 +455,7 @@ async function handleFolder(files) {
   const rootDirName = files[0].webkitRelativePath.split("/")[0];
   globalPpmFilesByFolder = {};
   files.sort((a, b) => a.name.localeCompare(b.name));
-  usingFolders = rootDirName.startsWith("4B47554");
+  usingFolders = rootDirName.startsWith("4B4755");
 
   const filenameMap = {};
 
