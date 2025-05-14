@@ -377,6 +377,88 @@
 			.demo, .organize {
 			display:none;
 			}
+
+			.flipnote {
+			width: 98%;
+			font-size: 122%;
+			}
+
+			#thumb {
+			width: 128px;
+			height: 96px;
+			}
+			
+			.playstateicon {
+			transform: translate(226%, 74%);
+			width: 40px;
+			}
+			
+			.playeractive {
+			outline: solid 6px blue;
+			}
+			
+			.foldernote {
+			font-size: 17px;
+			}
+			
+			#closePlayer {
+			width: 180px;
+			font-size: 22px;
+			}
+			
+			#returnTop {
+			font-size: 22px;
+			width:105px;
+			}
+			
+			flipnote-player::part(Controls__playButton) {
+			display:none;
+			}
+
+			.flipnotesList {
+			grid-template-columns: repeat(auto-fill, minmax(410px, 1fr));
+			}
+			
+			.dupbutton, #folderSelect, #folderList div {
+			font-size: 17.6px;
+			}
+			
+			.dupflips {
+			width:98%;
+			}
+
+			
+			}
 			
 			
+			
+			@media (max-width: 480px) {
+				
+			.flipnote {
+			font-size: 99%;
+			}
+
+			#thumb {
+			width: 96px;
+			height: 72px;
+			}
+			
+			.playstateicon {
+			transform: translate(226%, 74%);
+			width: 40px;
+			}
+			
+			.playeractive {
+			outline: solid 5px blue;
+			}
+				
+			.playstateicon {
+			transform: translate(208%, 68%);
+			width: 32px;
+			}
+			
+			.dupbutton, #folderSelect, #folderList div {
+			font-size: 16px;
+			}
+				
 			}
