@@ -471,6 +471,8 @@ async function handleFolder(files) {
     if (!filenameMap[nameKey]) filenameMap[nameKey] = [];
     filenameMap[nameKey].push({ file, folder });
   }
+  
+  
 
 const toggleContainer = document.getElementById("dupbutton");
 const dupDiv = document.getElementById("duplicateNotice");
@@ -638,7 +640,7 @@ if (usingFolders) {
 
   await renderFolder(currentFolder);
 } else {
-  document.getElementById("headbuttons").style.display = "none";
+  document.getElementById("headbuttons").classList.remove("headbuttonvisible");
   await renderFolder("no_folder");
 }
 

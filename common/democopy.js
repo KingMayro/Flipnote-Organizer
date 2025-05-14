@@ -3,45 +3,52 @@
 	  .then(data => handleFolderFromJson(data));
 
 
-	async function handleFolderFromJson(jsonData) {
-	  globalPpmFilesByFolder = {};
-	  const filenameMap = {};
+async function handleFolderFromJson(jsonData) {
+  const holdtheload = setTimeout(() => {
+    document.getElementById("loadingfrog").style.display = "block";
+  }, 500);
 
-	  const rootDir = Object.keys(jsonData)[0];
-	  const folderMap = jsonData[rootDir];
+  globalPpmFilesByFolder = {};
+  const filenameMap = {};
 
-	  usingFolders = rootDir.startsWith("4B47554");
+  const rootDir = Object.keys(jsonData)[0];
+  const folderMap = jsonData[rootDir];
 
-	  for (const folderName in folderMap) {
-		const ppmPaths = folderMap[folderName];
-		globalPpmFilesByFolder[folderName] = [];
+  usingFolders = rootDir.startsWith("4B4755");
 
-		for (const path of ppmPaths) {
-		  try {
-			const response = await fetch(path);
-			if (!response.ok) throw new Error(`Failed to fetch ${path}`);
+  try {
+    for (const folderName in folderMap) {
+      const ppmPaths = folderMap[folderName];
+      globalPpmFilesByFolder[folderName] = [];
 
-			const blob = await response.blob();
-			const filename = path.split("/").pop();
-			const file = new File([blob], filename, {
-			  type: blob.type,
-			  lastModified: Date.now()
-			});
+      for (const path of ppmPaths) {
+        try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error(`Failed to fetch ${path}`);
 
-			globalPpmFilesByFolder[folderName].push(file);
+          const blob = await response.blob();
+          const filename = path.split("/").pop();
+          const file = new File([blob], filename, {
+            type: blob.type,
+            lastModified: Date.now()
+          });
 
-			const nameKey = filename.toLowerCase();
-			if (!filenameMap[nameKey]) filenameMap[nameKey] = [];
-			filenameMap[nameKey].push({ file, folder: folderName });
+          globalPpmFilesByFolder[folderName].push(file);
 
-		  } catch (err) {
-			console.error(`Error loading file ${path}:`, err);
-		  }
-		}
-	  }
+          const nameKey = filename.toLowerCase();
+          if (!filenameMap[nameKey]) filenameMap[nameKey] = [];
+          filenameMap[nameKey].push({ file, folder: folderName });
 
+        } catch (err) {
+          console.error(`Error loading file ${path}:`, err);
+        }
+      }
+    }
+  } finally {
+    clearTimeout(holdtheload);
+    document.getElementById("loadingfrog").style.display = "none";
+  }
 
-	  console.log("PPM files loaded from JSON:", globalPpmFilesByFolder);
 	const toggleContainer = document.getElementById("dupbutton");
 	const dupDiv = document.getElementById("duplicateNotice");
 	toggleContainer.innerHTML = "";
