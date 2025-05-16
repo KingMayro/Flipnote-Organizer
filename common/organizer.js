@@ -779,7 +779,9 @@ if (usingFolders) {
       dropdownOpen = false;
       optionsDiv.style.display = "none";
       updateSelectText();
-      renderFolder(folder);
+      renderFolder(folder).then(() => {
+	  watchflipnotes();
+	  });
     };
     optionsDiv.appendChild(opt);
   });
