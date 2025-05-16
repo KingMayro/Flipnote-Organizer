@@ -74,6 +74,7 @@ async function handleFolderFromJson(jsonData) {
 			: "You've got Duplicates! ▼";
 
 		  const snd = isHidden ? dupListOpenSound : dupListCloseSound;
+		  snd.volume = sfxVolume;
 		  snd.currentTime = 0;
 		  snd.play();
 		};
@@ -203,6 +204,7 @@ async function handleFolderFromJson(jsonData) {
 		  updateSelectText();
 
 		  const snd = dropdownOpen ? folderListOpenSound : folderListCloseSound;
+		  snd.volume = sfxVolume;
 		  snd.currentTime = 0;
 		  snd.play();
 		};
@@ -210,6 +212,7 @@ async function handleFolderFromJson(jsonData) {
 		document.addEventListener("click", function (e) {
 		  if (!document.getElementById("folderSelectWrapper").contains(e.target)) {
 			if (dropdownOpen) {
+			  folderListCloseSound.volume = sfxVolume;
 			  folderListCloseSound.currentTime = 0;
 			  folderListCloseSound.play();
 			}
