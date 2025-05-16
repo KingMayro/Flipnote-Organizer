@@ -736,8 +736,9 @@ async function renderAllFlipnotes() {
       .flat();
 
     globalPpmFilesByFolder["All Flipnotes"] = filesOnly;
-    await renderFolder("All Flipnotes");
+    await renderFolder("All Flipnotes").then(() => {
 	watchflipnotes();
+	});
 
     const header = document.getElementById("flipnotesListHeader");
     header.innerHTML = `
@@ -818,11 +819,14 @@ if (usingFolders) {
 	});
 
 
-  await renderFolder(currentFolder);
+  await renderFolder(currentFolder).then(() => {
   watchflipnotes();
+  });
 } else {
   document.getElementById("headbuttons").classList.remove("headbuttonvisible");
-  await renderFolder("no_folder");
+  await renderFolder("no_folder").then(() => {
+  watchflipnotes();
+  });
 }
 
 function truncateFolderName(name, maxLength) {
