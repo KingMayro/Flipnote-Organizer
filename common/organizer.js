@@ -16,14 +16,18 @@
 	const folderListCloseSound = new Audio("sound/SE_SY_POPUP_SELECT.wav");
 	const dupListOpenSound = new Audio("sound/SE_SY_FRAME_BUTTON.wav");
 	const dupListCloseSound = new Audio("sound/SE_SY_FRAME_RETURN.wav");
+	const shiftDownSound = new Audio('sound/SE_SY_SHIFT_MODE_ON.wav');
+	const shiftReleaseSound = new Audio('sound/SE_SY_SHIFT_MODE_OFF.wav');
 
 
-	const releaseSounds = {
+
+	const buttonSounds = {
 	  thumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
 	  returnTop: new Audio("sound/SE_SY_FRAME_RETURN_TOP.wav"),
 	  closePlayer: new Audio("sound/SE_SY_DRAW_TOOL_BTN_OFF.wav"),
 	  folderstufflist: new Audio("sound/SE_SY_POPUP_SELECT.wav")
 	};
+	
 	
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
@@ -38,22 +42,107 @@
 
 		if (!el) return;
 
-		if (el.id && releaseSounds[el.id]) {
-		  const snd = releaseSounds[el.id];
+		if (el.id && buttonSounds[el.id]) {
+		  const snd = buttonSounds[el.id];
 		  snd.currentTime = 0;
 		  snd.play();
 		  return;
 		}
 
 		for (const cls of el.classList) {
-		  if (releaseSounds[cls]) {
-			const snd = releaseSounds[cls];
+		  if (buttonSounds[cls]) {
+			const snd = buttonSounds[cls];
 			snd.currentTime = 0;
 			snd.play();
 			break;
 		  }
 		}
 	  });
+	});
+
+
+// I could never get the perfect sizes for the inter alt elements, so this will have to do :happee:
+	function flipdetailheight() {
+	  const cards = document.querySelectorAll('.flipnote');
+
+	  cards.forEach(card => {
+		const flipDets = card.querySelector('.flipdetails');
+		const altFlipDets = card.querySelector('.altflipdetails');
+
+		if (!flipDets || !altFlipDets) return;
+
+		const flipDetsStyle = window.getComputedStyle(flipDets);
+		
+		if (flipDetsStyle.display === 'none') return;
+
+		const flipDetsHeight = flipDets.getBoundingClientRect().height;
+		const altFlipDetsHeight = parseFloat(altFlipDets.style.height) || 0;
+
+		if (Math.abs(flipDetsHeight - altFlipDetsHeight) > 0.2) {
+		  altFlipDets.style.height = `${flipDetsHeight}px`;
+		}
+	  });
+	}
+
+
+
+	
+	let shiftPushed = false;
+	const visibleFlipnotes = new Set();
+
+	function updateCardAltDetails(card, showAlt) {
+	  const flipDets = card.querySelector('.flipdetails');
+	  const detailsDiv = card.querySelector('.altflipdetails');
+	  flipdetailheight();
+
+	  if (showAlt) {
+		if (flipDets) flipDets.style.display = 'none';
+		if (detailsDiv) detailsDiv.style.display = 'block';
+	  } else {
+		if (flipDets) flipDets.style.display = 'block';
+		if (detailsDiv) detailsDiv.style.display = 'none';
+	  }
+	}
+
+	const observer = new IntersectionObserver(entries => {
+	  for (const entry of entries) {
+		const card = entry.target;
+
+		if (entry.isIntersecting) {
+		  visibleFlipnotes.add(card);
+		  updateCardAltDetails(card, shiftPushed);
+		} else {
+		  visibleFlipnotes.delete(card);
+		}
+	  }
+	}, {
+	  root: null,
+	  threshold: 0.01
+	});
+
+	//true
+	function watchflipnotes() {
+	  document.querySelectorAll('.flipnote').forEach(card => observer.observe(card));
+	}
+
+	watchflipnotes();
+
+	document.addEventListener('keydown', (e) => {
+	  if (e.key === 'Shift' && !shiftPushed) {
+		shiftPushed = true;
+		shiftDownSound.currentTime = 0;
+		shiftDownSound.play();
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, true));
+	  }
+	});
+
+	document.addEventListener('keyup', (e) => {
+	  if (e.key === 'Shift') {
+		shiftPushed = false;
+		shiftReleaseSound.currentTime = 0;
+		shiftReleaseSound.play();
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
+	  }
 	});
 
 
@@ -82,24 +171,8 @@
 
 	sudofontBootleg();
 
-	
-	closePlayerButton.addEventListener('click', () => {
-		player.style.display = 'none';
-		player.src = '';
-		
-		  if (activeThumb) {
-			activeThumb.classList.remove('playeractive');
-			activeThumb = null;
-		  }
-		  
-		  if (playPauseIcon) {
-			playPauseIcon.remove();
-			playPauseIcon = null;
-		  }
-	});
 
 	const returnToTop = document.getElementById('returnTop');
-
 
 	window.addEventListener('scroll', () => {
 	  if (window.scrollY > 650) {
@@ -116,10 +189,15 @@
 
 	closePlayerButton.addEventListener('click', () => {
 	  player.style.display = 'none';
-	  player.src = '';
+	  player.pause();
 	  if (activeThumb) {
 		activeThumb.classList.remove('playeractive');
 		activeThumb = null;
+	  }
+	  
+	  if (playPauseIcon) {
+		playPauseIcon.remove();
+		playPauseIcon = null;
 	  }
 
 	  closePlayerButton.classList.remove('visible');
@@ -343,6 +421,7 @@
 	let globalPpmFilesByFolder = {};
 	let usingFolders = false;
 
+
 	async function renderFolder(folderName) {
 	  showFrog();
   try {
@@ -366,6 +445,7 @@
 
 		const lockFlag = data[0x10] | (data[0x11] << 8);
 		const isLocked = lockFlag === 1;
+		const playbackstuff = getPlaybackstuff(arrayBuffer);
 
 		const currentAuthorId = readAuthorId(data, 0x10 + 0x4E);
 		const parentAuthorId = readAuthorId(data, 0x10 + 0x46);
@@ -384,11 +464,63 @@
 				${isLocked ? `<img src="graphics/lock.svg" class="spinofficon">` : ""}
 			  </span>
 			</div>
-			<div class="filename"><b>FSID:</b> ${currentAuthorId}</div>
-			<div class="filename">${file.name}</div>
+			
+			<div class="flipdetails">
+				<div class="filename"><b>FSID:</b> ${currentAuthorId}</div>
+				<div class="filename">${file.name}</div>
+			</div>
+			
+			<div class="altflipdetails" style="display: none;vertical-align:middle;">
+				<div class="filename">
+					<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Created with Inkscape (http://www.inkscape.org/) --><svg width="28.789799mm" height="6.125494mm" viewBox="0 0 28.789798 6.1254941" version="1.1" id="svg1" xml:space="preserve" sodipodi:docname="test.svg" inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview id="namedview1" pagecolor="#505050" bordercolor="#ffffff" borderopacity="1" inkscape:showpageshadow="0" inkscape:pageopacity="0" inkscape:pagecheckerboard="1" inkscape:deskcolor="#505050" inkscape:document-units="mm" inkscape:zoom="5.9351837" inkscape:cx="57.706722" inkscape:cy="19.460223" inkscape:window-width="1920" inkscape:window-height="1121" inkscape:window-x="-9" inkscape:window-y="-9" inkscape:window-maximized="1" inkscape:current-layer="svg1" /><defs id="defs1" /><g id="layer1" style="display:inline" transform="matrix(1.1577575,0,0,1.1577575,-130.2987,-204.94108)"><rect style="display:inline;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" id="rect17" width="24.866865" height="5.2908263" x="112.54404" y="177.01555" ry="0" /><rect style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" id="rect18" width="24.167439" height="4.7311234" x="112.89412" y="177.29564" /><path id="num1" style="display:none;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.96034,178.39108 v 0.6268 h 0.2901 v 1.89635 h 0.63109 v -2.52315 h -0.28948 -0.34161 z" /><path id="num2" style="display:inline;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.28325,178.39108 v 0.62619 h 1.87979 v 0.31953 h -1.54186 c -0.005,-1.9e-4 -0.008,-6.2e-4 -0.0135,-6.2e-4 -0.17379,0 -0.31401,0.14023 -0.31401,0.31402 v 0.95062 c 0,0.007 7.4e-4,0.0143 10e-4,0.0215 v 0.29193 h 0.31279 2.17785 v -0.63355 h -1.86445 v -0.31033 h 1.5627 v -6.2e-4 c 0.17061,-0.004 0.30666,-0.14189 0.30666,-0.31339 v -0.95064 c 0,-0.17214 -0.13702,-0.31136 -0.3085,-0.31401 v -6.2e-4 z" /><path id="num3" style="display:none;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 116.47398,178.3917 c -0.004,0 -0.007,5e-4 -0.0107,6.1e-4 h -2.17847 v 0.62435 h 1.8804 v 0.32138 h -1.8804 v 0.63293 h 1.8804 v 0.31155 h -1.8804 v 0.63293 h 2.18889 0.008 c 6.3e-4,0 10e-4,1e-5 0.002,0 0.17002,-0.001 0.30665,-0.13822 0.30665,-0.30849 v -1.90677 c 0,-0.17089 -0.1376,-0.30849 -0.30849,-0.30849 z" /><path id="num4" style="display:none;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.27774,178.3917 v 0.94634 h -10e-4 v 0.63293 h 10e-4 0.62557 1.25359 v 0.94448 h 0.62557 v -2.52375 h -0.62557 v 0.94634 h -1.25359 v -0.94634 z" /><path id="num5" style="display:none;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.2949,178.38986 v 0.29193 c -4.5e-4,0.007 -0.001,0.0144 -0.001,0.0215 v 0.85434 0.0962 0.31463 h 1.86936 v 0.3183 h -1.8798 v 0.62619 h 2.19871 v -6.1e-4 c 0.17148,-0.002 0.3085,-0.14188 0.3085,-0.31401 v -0.95063 c 0,-0.1715 -0.13606,-0.30985 -0.30666,-0.31341 v -6e-4 h -1.5627 v -0.31033 h 1.86445 v -0.63355 h -2.17786 z" /><path id="num6" style="display:none;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.59359,178.3917 c -0.1709,0 -0.3085,0.1376 -0.3085,0.30849 v 1.90677 c 0,0.17029 0.13661,0.30751 0.30666,0.30849 6.1e-4,1e-5 10e-4,0 0.002,0 h 0.008 1.88224 v -6e-4 c 0.17033,-0.004 0.30665,-0.14102 0.30665,-0.31219 v -0.95123 c 0,-0.17117 -0.13631,-0.30888 -0.30665,-0.31217 v -0.001 h -1.57375 v -0.32138 h 1.8804 v -0.62435 h -2.17846 c -0.004,-1.2e-4 -0.007,-6e-4 -0.0107,-6e-4 z m 0.31707,1.57927 h 1.25483 v 0.31155 h -1.25483 z" /><path id="num7" style="display:none;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.28509,178.39231 v 0.62435 h 1.67617 l -0.75805,0.79791 h -0.002 v 1.10088 h 0.62557 v -0.87948 l 0.96781,-1.01931 -0.001,-6.2e-4 v -0.62373 z" /><path id="num8" style="display:none;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 114.59297,178.3917 c -0.1709,0 -0.30849,0.1376 -0.30849,0.30849 v 1.90677 c 0,0.17089 0.13759,0.30849 0.30849,0.30849 h 0.008 c 0.004,0 0.007,-4.9e-4 0.0107,-6e-4 h 1.85096 c 0.004,1e-4 0.007,6e-4 0.0107,6e-4 h 0.008 c 0.17091,0 0.30851,-0.1376 0.30851,-0.30849 v -1.90677 c 0,-0.17089 -0.1376,-0.30849 -0.30851,-0.30849 h -0.008 c -0.004,0 -0.007,5e-4 -0.0107,6.1e-4 h -1.85096 c -0.004,-1.2e-4 -0.007,-6.1e-4 -0.0107,-6.1e-4 z m 0.31709,0.62496 h 1.25482 v 0.32076 h -1.25482 z m 0,0.95369 h 1.25482 v 0.31156 h -1.25482 z" /><path id="numque" style="display:inline;fill:#fbcb79;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 116.47596,178.3911 c -0.004,0 -0.007,4e-4 -0.0109,5.2e-4 h -2.18126 v 0.62529 h 1.87844 v 0.31987 h -1.15652 v 0.63304 h 1.4702 c 0.001,0 0.003,2e-5 0.004,0 0.17178,-0.002 0.30954,-0.14135 0.30954,-0.31368 v -0.95136 c 0,-0.16988 -0.13395,-0.30715 -0.3023,-0.31316 -1.8e-4,-1e-5 -3.5e-4,1e-5 -5.2e-4,0 -0.004,-1.2e-4 -0.007,-5.2e-4 -0.0109,-5.2e-4 z m -1.4702,1.89033 v 0.63303 h 0.77928 v -0.63303 z" /><path id="arrow1" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 208.84834,31.624264 c -0.0591,0.05907 -0.0954,0.140916 -0.0954,0.231444 l 3e-5,0.286083 c 0,0.181054 0.14553,0.326586 0.32658,0.326586 l 1.05067,2.7e-4 2.7e-4,1.05067 c 0,0.181055 0.14554,0.326587 0.32659,0.326587 l 0.28608,2.9e-5 c 0.18106,0 0.32681,-0.145753 0.32681,-0.326808 l 4e-5,-1.35872 c 3.5e-4,-0.0063 5.4e-4,-0.01234 5.4e-4,-0.01868 l -3e-5,-0.286083 c 0,-0.0456 -0.009,-0.08889 -0.026,-0.128247 -0.004,-0.0095 -0.008,-0.01889 -0.0133,-0.02789 -1.5e-4,-2.84e-4 -5.4e-4,-4.14e-4 -7e-4,-6.98e-4 -0.005,-0.009 -0.01,-0.01788 -0.0155,-0.02632 -1.8e-4,-2.75e-4 -5.1e-4,-4.22e-4 -7e-4,-6.98e-4 -0.006,-0.0083 -0.0115,-0.01629 -0.0179,-0.02401 -3.1e-4,-3.78e-4 -7.3e-4,-6.71e-4 -0.001,-0.001 -0.006,-0.0078 -0.013,-0.01527 -0.0201,-0.02244 -2.4e-4,-2.33e-4 -4.7e-4,-4.64e-4 -7e-4,-6.97e-4 -0.007,-0.007 -0.0148,-0.01376 -0.0224,-0.02013 -3.8e-4,-3.12e-4 -6.7e-4,-7.37e-4 -0.001,-10e-4 -0.008,-0.0064 -0.0156,-0.01216 -0.024,-0.01786 -2.6e-4,-1.8e-4 -4.3e-4,-5.19e-4 -6.9e-4,-6.98e-4 -0.0171,-0.01155 -0.0357,-0.02135 -0.0549,-0.02953 -0.0394,-0.01673 -0.0826,-0.02598 -0.12825,-0.02598 l -0.28608,-2.9e-5 c -0.006,0 -0.0124,1.87e-4 -0.0187,5.4e-4 l -1.35872,3.5e-5 c -0.0905,0 -0.17238,0.03629 -0.23145,0.09537 z" transform="matrix(0.67202893,0.7405249,-0.67202893,0.7405249,0,0)" /><path id="arrow2" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 121.20397,178.07595 c -0.0794,0 -0.15878,0.0337 -0.21962,0.10077 l -0.19224,0.21188 c -0.12167,0.13407 -0.12167,0.34961 0,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12168,0.13407 -0.12167,0.34962 0,0.48369 l 0.19224,0.21187 c 0.12167,0.13408 0.31757,0.13408 0.43925,0 l 0.91312,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19224,-0.21187 c 0.0306,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -8e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 6e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 4e-5,-5.1e-4 -4e-5,-0.001 0,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 0,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.8e-4,-0.0211 -0.002,-0.0315 -4e-5,-5.1e-4 5e-5,-0.001 0,-0.002 -9.2e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -6e-5,-3.3e-4 5e-5,-7.1e-4 0,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19223,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91312,-1.00614 c -0.0608,-0.067 -0.14024,-0.10078 -0.21963,-0.10078 z" /><path id="arrow3" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 123.32891,178.07595 c -0.0794,0 -0.15879,0.0337 -0.21963,0.10077 l -0.19223,0.21188 c -0.12168,0.13407 -0.12168,0.34961 -1e-5,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12167,0.13407 -0.12167,0.34962 1e-5,0.48369 l 0.19223,0.21187 c 0.12168,0.13408 0.31758,0.13408 0.43925,0 l 0.91313,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19223,-0.21187 c 0.0307,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -9e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 7e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 5e-5,-5.1e-4 -4e-5,-0.001 1e-5,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 -1e-5,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.9e-4,-0.0211 -0.002,-0.0315 -5e-5,-5.1e-4 4e-5,-0.001 -1e-5,-0.002 -9.1e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -5e-5,-3.3e-4 6e-5,-7.1e-4 1e-5,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19224,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91313,-1.00614 c -0.0608,-0.067 -0.14023,-0.10078 -0.21962,-0.10078 z" /><path id="arrow4" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 125.43317,178.07595 c -0.0794,0 -0.15878,0.0337 -0.21962,0.10077 l -0.19224,0.21188 c -0.12167,0.13407 -0.12167,0.34961 0,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12168,0.13407 -0.12167,0.34962 0,0.48369 l 0.19224,0.21187 c 0.12167,0.13408 0.31757,0.13408 0.43925,0 l 0.91312,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19224,-0.21187 c 0.0306,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -8e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 6e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 4e-5,-5.1e-4 -4e-5,-0.001 0,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 0,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.8e-4,-0.0211 -0.002,-0.0315 -4e-5,-5.1e-4 5e-5,-0.001 0,-0.002 -9.2e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -6e-5,-3.3e-4 5e-5,-7.1e-4 0,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19223,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91312,-1.00614 c -0.0608,-0.067 -0.14024,-0.10078 -0.21963,-0.10078 z" /><path id="arrow5" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 127.55861,178.07595 c -0.0794,0 -0.15879,0.0337 -0.21963,0.10077 l -0.19223,0.21188 c -0.12167,0.13407 -0.12168,0.34961 -1e-5,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12167,0.13407 -0.12166,0.34962 1e-5,0.48369 l 0.19223,0.21187 c 0.12168,0.13408 0.31758,0.13408 0.43925,0 l 0.91313,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19223,-0.21187 c 0.0306,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -9e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 7e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 5e-5,-5.1e-4 -4e-5,-0.001 1e-5,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 0,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.9e-4,-0.0211 -0.002,-0.0315 -5e-5,-5.1e-4 4e-5,-0.001 -1e-5,-0.002 -9.1e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -5e-5,-3.3e-4 6e-5,-7.1e-4 1e-5,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19224,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91312,-1.00614 c -0.0608,-0.067 -0.14024,-0.10078 -0.21963,-0.10078 z" /><path id="arrow6" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 129.66287,178.07595 c -0.0794,0 -0.15878,0.0337 -0.21962,0.10077 l -0.19224,0.21188 c -0.12167,0.13407 -0.12167,0.34961 0,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12168,0.13407 -0.12167,0.34962 0,0.48369 l 0.19224,0.21187 c 0.12167,0.13408 0.31757,0.13408 0.43925,0 l 0.91312,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19224,-0.21187 c 0.0306,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -8e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 6e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 4e-5,-5.1e-4 -4e-5,-0.001 0,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 0,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.8e-4,-0.0211 -0.002,-0.0315 -4e-5,-5.1e-4 5e-5,-0.001 0,-0.002 -9.2e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -6e-5,-3.3e-4 5e-5,-7.1e-4 0,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19223,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91312,-1.00614 c -0.0608,-0.067 -0.14024,-0.10078 -0.21963,-0.10078 z" /><path id="arrow7" style="opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 131.78781,178.07595 c -0.0794,0 -0.15879,0.0337 -0.21963,0.10077 l -0.19223,0.21188 c -0.12168,0.13407 -0.12168,0.34961 -10e-6,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12167,0.13407 -0.12167,0.34962 10e-6,0.48369 l 0.19223,0.21187 c 0.12168,0.13408 0.31758,0.13408 0.43925,0 l 0.91313,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19223,-0.21187 c 0.0307,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -9e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 7e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 5e-5,-5.1e-4 -4e-5,-0.001 10e-6,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 -1e-5,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.9e-4,-0.0211 -0.002,-0.0315 -5e-5,-5.1e-4 4e-5,-0.001 -10e-6,-0.002 -9.1e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -5e-5,-3.3e-4 6e-5,-7.1e-4 1e-5,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19224,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91313,-1.00614 c -0.0608,-0.067 -0.14023,-0.10078 -0.21962,-0.10078 z" /><path id="arrow8" style="display:inline;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 133.89207,178.07595 c -0.0794,0 -0.15878,0.0337 -0.21962,0.10077 l -0.19224,0.21188 c -0.12167,0.13407 -0.12167,0.34961 0,0.48368 l 0.7059,0.77825 -0.7059,0.77825 c -0.12168,0.13407 -0.12167,0.34962 0,0.48369 l 0.19224,0.21187 c 0.12167,0.13408 0.31757,0.13408 0.43925,0 l 0.91312,-1.00613 c 0.004,-0.004 0.009,-0.009 0.0129,-0.0134 l 0.19224,-0.21187 c 0.0306,-0.0338 0.0535,-0.0727 0.0687,-0.11421 0.004,-0.01 0.007,-0.0202 0.01,-0.0305 9e-5,-3.2e-4 -8e-5,-7.1e-4 0,-0.001 0.003,-0.0103 0.005,-0.0206 0.007,-0.031 6e-5,-3.4e-4 -6e-5,-6.9e-4 0,-0.001 0.002,-0.0103 0.003,-0.0206 0.004,-0.031 4e-5,-5.1e-4 -4e-5,-0.001 0,-0.002 9.2e-4,-0.0106 0.002,-0.0209 0.002,-0.0315 0,-3.5e-4 0,-6.9e-4 0,-0.001 0,-0.0104 -6.8e-4,-0.0211 -0.002,-0.0315 -4e-5,-5.1e-4 5e-5,-0.001 0,-0.002 -9.2e-4,-0.0105 -0.002,-0.0206 -0.004,-0.031 -6e-5,-3.3e-4 5e-5,-7.1e-4 0,-0.001 -0.004,-0.0212 -0.01,-0.0422 -0.0171,-0.0625 -0.0152,-0.0415 -0.0381,-0.0804 -0.0687,-0.11421 l -0.19223,-0.21187 c -0.004,-0.005 -0.008,-0.009 -0.0129,-0.0134 l -0.91312,-1.00614 c -0.0608,-0.067 -0.14024,-0.10078 -0.21963,-0.10078 z" /></g></svg>
+					<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Created with Inkscape (http://www.inkscape.org/) --><svg width="9.1864014mm" height="6.125mm" viewBox="0 0 9.1864014 6.125" version="1.1" id="svg1" xml:space="preserve" inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)" sodipodi:docname="test.svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview id="namedview1" pagecolor="#505050" bordercolor="#ffffff" borderopacity="1" inkscape:showpageshadow="0" inkscape:pageopacity="0" inkscape:pagecheckerboard="1" inkscape:deskcolor="#505050" inkscape:document-units="mm" inkscape:zoom="11.313709" inkscape:cx="13.258252" inkscape:cy="14.71666" inkscape:window-width="1920" inkscape:window-height="1121" inkscape:window-x="-9" inkscape:window-y="-9" inkscape:window-maximized="1" inkscape:current-layer="layer1" /><defs id="defs1" /><g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1" transform="translate(-104.63155,-144.64876)"><rect style="display:inline;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" id="rect17" width="9.1864014" height="6.125" x="104.63155" y="144.64876" ry="0" /><rect style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" id="rect18" width="8.3745823" height="5.4770522" x="105.03683" y="144.97301" /><path id="loopicon" style="display:inline;opacity:1;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 110.05144,145.38373 v 0.86327 h -2.69745 c -0.28031,0 -0.50612,0.2258 -0.50612,0.50612 0,0.005 4.5e-4,0.009 6e-4,0.015 h -6e-4 v 2.56645 h 6e-4 c 0.007,0.26868 0.22544,0.48278 0.49594,0.48278 h 3.81856 c 0.26706,0 0.48284,-0.20875 0.49534,-0.4726 h 6.1e-4 v -0.0108 c 9e-5,-0.004 5.9e-4,-0.008 5.9e-4,-0.0122 0,-0.004 -5e-4,-0.008 -5.9e-4,-0.0121 v -1.91018 l -1.01163,0.83634 v 0.58987 h -2.7872 v -1.565 h 2.19135 v 0.82677 l 1.60509,-1.33467 z" inkscape:label="loop" /><path id="noloopicon" style="display:none;fill:#fbcb79;fill-opacity:1;stroke:#39317c;stroke-width:0;-inkscape-stroke:none;paint-order:markers stroke fill" d="m 109.89262,146.60821 v 0.63881 h -1.34893 v 0.74898 h 1.34893 v 0.61192 l 1.18838,-0.98769 z m -2.36834,0.63881 v 0.74898 h 0.27356 v -0.74898 z m 0.51681,0 v 0.74898 h 0.2808 v -0.74898 z" transform="matrix(1.2101807,0,0,1.2101807,-23.031787,-31.025158)" inkscape:label="noloop" sodipodi:nodetypes="cccccccccccccccccc" /></g></svg>
+				</div>
+				<div class="filename" style="line-height:0.5;"><b>Size:</b> ${(file.size / 1024).toFixed(1)} KB</div>
+			</div>
+			
 		  </div>
 		`;
 		flipnotesList.appendChild(div);
+		
+
+		const frameSpeed = playbackstuff.frameSpeed;
+		const validframespeed = frameSpeed >= 1 && frameSpeed <= 8;
+
+		for (let i = 1; i <= 8; i++) {
+		  const speednumber = div.querySelector(`#num${i}`);
+		  if (speednumber) {
+			speednumber.style.display = (validframespeed && i === frameSpeed) ? 'inline' : 'none';
+		  }
+		}
+		const questionmark = div.querySelector('#numque');
+		if (questionmark) {
+		  questionmark.style.display = validframespeed ? 'none' : 'inline';
+		}
+
+		for (let i = 1; i <= 8; i++) {
+		  const speedarrows = div.querySelector(`#arrow${i}`);
+		  if (speedarrows) {
+			if (validframespeed && i <= frameSpeed) {
+			  speedarrows.style.fill = '#fb5151';
+			} else {
+			  speedarrows.style.fill = '#fbcb79';
+			}
+		  }
+		}
+
+		const loopIcon = div.querySelector('#loopicon');
+		const noLoopIcon = div.querySelector('#noloopicon');
+		if (loopIcon && noLoopIcon) {
+		  if (playbackstuff.loops) {
+			loopIcon.style.display = 'inline';
+			noLoopIcon.style.display = 'none';
+		  } else {
+			loopIcon.style.display = 'none';
+			noLoopIcon.style.display = 'inline';
+		  }
+		}
+
+
 
 		const thumb = div.querySelector('#thumb');
 		thumb.onclick = () => openPlayer(file, thumb);
@@ -398,6 +530,35 @@
     hideFrog();
   }
 }
+
+	function getPlaybackstuff(buffer) {
+	  const view = new DataView(buffer);
+	  const bufferLength = buffer.byteLength;
+
+	  const animationDataSize = view.getUint32(0x04, true);
+	  const frameCount = view.getUint16(0x0C, true) + 1;
+
+	  const animationHeaderOffset = 0x06A0;
+	  const animationFlags = view.getUint16(animationHeaderOffset + 6, true);
+	  const loops = (animationFlags & 0x2) !== 0;
+
+	  const soundEffectFlagsSize = Math.ceil(frameCount / 4) * 4;
+	  const soundHeaderOffset = animationHeaderOffset + animationDataSize + soundEffectFlagsSize;
+
+	  const rawFrameSpeedOffset = soundHeaderOffset + 16;
+
+	  let rawFrameSpeed;
+	  if (rawFrameSpeedOffset < bufferLength) {
+		rawFrameSpeed = view.getUint8(rawFrameSpeedOffset);
+	  } else {
+		rawFrameSpeed = 8;
+	  }
+
+	  const frameSpeed = 8 - rawFrameSpeed;
+
+	  return { frameSpeed, loops };
+	}
+
 
 	const folderBox = document.getElementById("folderinputbox");
 	const folderPicker = document.getElementById("folderPicker");
@@ -489,6 +650,7 @@ async function handleFolder(files) {
     filenameMap[nameKey].push({ file, folder });
   }
   
+
 document.getElementById("flipnotesList").classList.add("flipnotesList");
 
 const toggleContainer = document.getElementById("dupbutton");
@@ -575,6 +737,7 @@ async function renderAllFlipnotes() {
 
     globalPpmFilesByFolder["All Flipnotes"] = filesOnly;
     await renderFolder("All Flipnotes");
+	watchflipnotes();
 
     const header = document.getElementById("flipnotesListHeader");
     header.innerHTML = `
@@ -656,6 +819,7 @@ if (usingFolders) {
 
 
   await renderFolder(currentFolder);
+  watchflipnotes();
 } else {
   document.getElementById("headbuttons").classList.remove("headbuttonvisible");
   await renderFolder("no_folder");

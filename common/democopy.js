@@ -1,3 +1,5 @@
+// A lot of this is hacked together just so it barely works enough lol
+
 	fetch("sampleflipnotes/demofilestructure.json")
 	  .then(res => res.json())
 	  .then(data => handleFolderFromJson(data));
@@ -132,7 +134,10 @@ async function handleFolderFromJson(jsonData) {
 		  .flat();
 
 		globalPpmFilesByFolder["All Flipnotes"] = filesOnly;
-		await renderFolder("All Flipnotes");
+		await renderFolder("All Flipnotes").then(() => {
+		watchflipnotes();
+		});
+
 
 		const header = document.getElementById("flipnotesListHeader");
 		header.innerHTML = `
@@ -173,7 +178,9 @@ async function handleFolderFromJson(jsonData) {
 		  dropdownOpen = false;
 		  optionsDiv.style.display = "none";
 		  updateSelectText();
-		  renderFolder(folder);
+		  renderFolder(folder).then(() => {
+		watchflipnotes();
+		});
 		};
 		optionsDiv.appendChild(opt);
 	  });
@@ -213,7 +220,9 @@ async function handleFolderFromJson(jsonData) {
 		});
 
 
-	  await renderFolder(currentFolder);
+	  await renderFolder(currentFolder).then(() => {
+		watchflipnotes();
+		});
 	} else {
 	  document.getElementById("headbuttons").style.display = "none";
 	  await renderFolder("no_folder");
