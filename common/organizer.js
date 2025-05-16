@@ -435,8 +435,13 @@
 	  isDraggingVol = true;
 	  handle.style.display = "block";
 	  setvolumeFromX(e.touches[0].clientX);
+	  e.preventDefault();
 
-	  const onTouchMove = (e) => setvolumeFromX(e.touches[0].clientX);
+	  const onTouchMove = (e) => {
+		setvolumeFromX(e.touches[0].clientX);
+		e.preventDefault();
+	  };
+
 	  const onTouchEnd = () => {
 		isDraggingVol = false;
 		handle.style.display = "none";
@@ -444,9 +449,9 @@
 		document.removeEventListener("touchend", onTouchEnd);
 	  };
 
-	  document.addEventListener("touchmove", onTouchMove);
+	  document.addEventListener("touchmove", onTouchMove, { passive: false });
 	  document.addEventListener("touchend", onTouchEnd);
-	}, { passive: true });
+	}, { passive: false });
 
 	wrapper.addEventListener("mouseenter", () => {
 	  handle.style.display = "block";
