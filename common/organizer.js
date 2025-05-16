@@ -1,14 +1,6 @@
 	// what a trainwreck
 	// dont let me code again lmao
 	
-	
-	const palette = [
-	  '#FFFFFF', '#525252', '#FFFFFF', '#9C9C9C',
-	  '#FF4844', '#C8514F', '#FFADAC', '#00FF00',
-	  '#4840FF', '#514FB8', '#ADABFF', '#00FF00',
-	  '#B657B7', '#00FF00', '#00FF00', '#00FF00'
-	];
-	
 	const clickDownSound = new Audio("sound/SE_SY_BUTTON_IN.wav");
 	const playSound = new Audio("sound/SE_SY_MOVIE_PLAY.wav");
 	const pauseSound = new Audio("sound/SE_SY_MOVIE_STOP.wav");
@@ -32,6 +24,7 @@
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
 		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon")) {
+		  clickDownSound.volume = sfxVolume;
 		  clickDownSound.currentTime = 0;
 		  clickDownSound.play();
 		}
@@ -44,6 +37,7 @@
 
 		if (el.id && buttonSounds[el.id]) {
 		  const snd = buttonSounds[el.id];
+		  snd.volume = sfxVolume;
 		  snd.currentTime = 0;
 		  snd.play();
 		  return;
@@ -52,6 +46,7 @@
 		for (const cls of el.classList) {
 		  if (buttonSounds[cls]) {
 			const snd = buttonSounds[cls];
+			snd.volume = sfxVolume;
 			snd.currentTime = 0;
 			snd.play();
 			break;
@@ -130,6 +125,7 @@
 	document.addEventListener('keydown', (e) => {
 	  if (e.key === 'Shift' && !shiftPushed) {
 		shiftPushed = true;
+		shiftDownSound.volume = sfxVolume;
 		shiftDownSound.currentTime = 0;
 		shiftDownSound.play();
 		visibleFlipnotes.forEach(card => updateCardAltDetails(card, true));
@@ -139,6 +135,7 @@
 	document.addEventListener('keyup', (e) => {
 	  if (e.key === 'Shift') {
 		shiftPushed = false;
+		shiftReleaseSound.volume = sfxVolume;
 		shiftReleaseSound.currentTime = 0;
 		shiftReleaseSound.play();
 		visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
@@ -269,10 +266,12 @@
 		  e.stopPropagation();
 		  if (player.paused) {
 			player.play();
+			playSound.volume = sfxVolume;
 			playSound.currentTime = 0;
 			playSound.play();
 		  } else {
 			player.pause();
+			pauseSound.volume = sfxVolume;
 			pauseSound.currentTime = 0;
 			pauseSound.play();
 		  }
@@ -370,6 +369,131 @@
 	player.addEventListener('touchstart', startDrag, { passive: false });
 	document.addEventListener('touchmove', onDrag, { passive: false });
 	document.addEventListener('touchend', stopDrag);
+
+
+
+	let sfxVolume = parseFloat(localStorage.getItem('sfxVolume'));
+	if (isNaN(sfxVolume)) sfxVolume = 1;
+
+	let wasVolume = parseFloat(localStorage.getItem('wasVolume'));
+	if (isNaN(wasVolume) || wasVolume === 0) wasVolume = 1;
+
+	let isDraggingVol = false;
+
+	const wrapper = document.getElementById("sfxvol");
+	const track = document.getElementById("sfxvolslider");
+	const fill = document.getElementById("sfxvolssliderbg");
+	const handle = document.getElementById("sfxvolhandle");
+	const icon = document.getElementById("sfxvolicon");
+
+	function moveslider() {
+	  fill.style.width = (sfxVolume * 100) + "%";
+	  handle.style.left = (sfxVolume * 100) + "%";
+	}
+
+	function updateIcon() {
+	  icon.src = sfxVolume === 0 ? "graphics/mute.svg" : "graphics/vol.svg";
+	}
+
+	function changesliderandicon() {
+	  moveslider();
+	  updateIcon();
+	}
+
+	function setvolumeFromX(x) {
+	  const rect = track.getBoundingClientRect();
+	  let percentage = (x - rect.left) / rect.width;
+	  percentage = Math.max(0, Math.min(1, percentage));
+	  sfxVolume = percentage;
+
+	  if (sfxVolume > 0) {
+		wasVolume = sfxVolume;
+	  }
+
+	  localStorage.setItem("sfxVolume", sfxVolume);
+	  changesliderandicon();
+	}
+
+	wrapper.addEventListener("mousedown", (e) => {
+	  isDraggingVol = true;
+	  handle.style.display = "block";
+	  setvolumeFromX(e.clientX);
+
+	  const onMouseMove = (e) => setvolumeFromX(e.clientX);
+	  const onMouseUp = () => {
+		isDraggingVol = false;
+		if (!track.matches(':hover')) handle.style.display = "none";
+		document.removeEventListener("mousemove", onMouseMove);
+		document.removeEventListener("mouseup", onMouseUp);
+	  };
+
+	  document.addEventListener("mousemove", onMouseMove);
+	  document.addEventListener("mouseup", onMouseUp);
+	});
+
+	wrapper.addEventListener("touchstart", (e) => {
+	  isDraggingVol = true;
+	  handle.style.display = "block";
+	  setvolumeFromX(e.touches[0].clientX);
+
+	  const onTouchMove = (e) => setvolumeFromX(e.touches[0].clientX);
+	  const onTouchEnd = () => {
+		isDraggingVol = false;
+		handle.style.display = "none";
+		document.removeEventListener("touchmove", onTouchMove);
+		document.removeEventListener("touchend", onTouchEnd);
+	  };
+
+	  document.addEventListener("touchmove", onTouchMove);
+	  document.addEventListener("touchend", onTouchEnd);
+	}, { passive: true });
+
+	wrapper.addEventListener("mouseenter", () => {
+	  handle.style.display = "block";
+	});
+	wrapper.addEventListener("mouseleave", () => {
+	  if (!isDraggingVol) {
+		handle.style.display = "none";
+	  }
+	});
+
+	icon.addEventListener("click", () => {
+	  if (sfxVolume === 0) {
+		sfxVolume = wasVolume || 1;
+	  } else {
+		wasVolume = sfxVolume;
+		sfxVolume = 0;
+	  }
+	  localStorage.setItem("sfxVolume", sfxVolume);
+	  changesliderandicon();
+	});
+
+	changesliderandicon();
+
+
+
+	const hambutton = document.getElementById("hambutton");
+	const hammenu = document.getElementById("hammenu");
+
+	hambutton.addEventListener("click", (e) => {
+	  e.stopPropagation();
+	  hammenu.classList.toggle("open");
+	});
+
+	document.addEventListener("click", (e) => {
+	  if (!document.getElementById("hamburger").contains(e.target)) {
+		hammenu.classList.remove("open");
+	  }
+	});
+
+	
+	
+	const palette = [
+	  '#FFFFFF', '#525252', '#FFFFFF', '#9C9C9C',
+	  '#FF4844', '#C8514F', '#FFADAC', '#00FF00',
+	  '#4840FF', '#514FB8', '#ADABFF', '#00FF00',
+	  '#B657B7', '#00FF00', '#00FF00', '#00FF00'
+	];
 
 
 	function decodeThumbnail(arrayBuffer) {
@@ -567,7 +691,7 @@
 
 	folderBox.addEventListener("drop", async (e) => {
 	  e.preventDefault();
-	  folderBox.style.opacity = "0.4";
+	  folderBox.style.opacity = "0.5";
 
 	  const items = e.dataTransfer.items;
 	  const files = [];
@@ -606,7 +730,7 @@
 	folderPicker.addEventListener("change", async (e) => {
 	  const files = Array.from(e.target.files);
 	  if (files.length > 0) {
-		folderBox.style.opacity = "0.6";
+		folderBox.style.opacity = "0.5";
 	  }
 	  await handleFolder(files);
 	});
@@ -676,6 +800,7 @@ if (duplicates.length > 0) {
 		: "You've got Duplicates! ▼";
 
 	  const snd = isHidden ? dupListOpenSound : dupListCloseSound;
+	  snd.volume = sfxVolume;
 	  snd.currentTime = 0;
 	  snd.play();
 	};
@@ -804,6 +929,7 @@ if (usingFolders) {
 	  updateSelectText();
 
 	  const snd = dropdownOpen ? folderListOpenSound : folderListCloseSound;
+	  snd.volume = sfxVolume;
 	  snd.currentTime = 0;
 	  snd.play();
 	};
@@ -811,6 +937,7 @@ if (usingFolders) {
 	document.addEventListener("click", function (e) {
 	  if (!document.getElementById("folderSelectWrapper").contains(e.target)) {
 		if (dropdownOpen) {
+		  folderListCloseSound.volume = sfxVolume;
 		  folderListCloseSound.currentTime = 0;
 		  folderListCloseSound.play();
 		}

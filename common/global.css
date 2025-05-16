@@ -298,6 +298,7 @@
 			.headerbutton:active {
 			opacity:0.7;
 			transform: scale(0.95);
+			transition: ease-in-out 0.05s;
 			}
 			
 			.headerbuttongroup {
@@ -316,6 +317,116 @@
 			.logo {
 			height:50px;
 			}
+			
+			#sfxvol {
+			width: 92%;
+			}
+
+			.sfxvol {
+			width: 88%;
+			margin: 10px 15px;
+			position: relative;
+			display:inline-flex;
+			cursor: pointer;
+			}
+
+			#sfxvolicon {
+			height: 30px;
+			cursor: pointer;
+			user-select: none;
+			display:inline-block;
+			margin: 0 15px 0 0;
+			}
+
+			#sfxvolslider {
+			background: #ba2000;
+			height: 6px;
+			border-radius: 100px;
+			position: relative;
+			display:inline-block;
+			width:100%;
+			margin:auto;
+			}
+
+			#sfxvolssliderbg {
+			background: white;
+			height: 100%;
+			width: 100%;
+			border-radius: 100px;
+			}
+
+			#sfxvolhandle {
+			width: 12px;
+			height: 12px;
+			background: #fb6100;
+			border: solid 4px white;
+			border-radius: 400px;
+			position: absolute;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			display: none;
+			pointer-events: none;
+			}
+
+			#hamburger {
+			position: relative;
+			float:right;
+			}
+
+			#hambutton {
+			height: 28px;
+			}
+
+			#hammenu {
+			position: absolute;
+			top: 50px;
+			right: 0;
+			background-color: #fb6100;
+			border:solid 4px #ba2000;
+			border-radius: 10px;
+			width: 300px;
+			display: none;
+			z-index: 300;
+			}
+
+			#hammenu.open {
+			display: block;
+			}
+
+			.menuop {
+			padding:15px;
+			display: block;
+			transition: ease-in-out 0.2s;
+			}
+
+			.menuop:hover {
+			background-color:#ff8539;
+			border-radius: 6px;
+			}
+
+			.menuop:active {
+			opacity:0.7;
+			transition: ease-in-out 0.05s;
+			}
+
+			.mobileonly {
+			display:none;
+			}
+
+			.menutitle {
+			padding:15px 15px 0;
+			margin:0;
+			color:white;
+			}
+
+			.menuhead {
+			color:white;
+			padding: 10px 15px 10px;
+			margin:0;
+			font-size:130%;
+			border-bottom: solid 4px #ba2000;
+			}
+			
 			
 			@media (max-width: 1000px) {
 			
@@ -337,7 +448,7 @@
 			}
 			
 			
-			@media (max-width: 740px) {
+			@media (max-width: 770px) {
 			
 			.headbuttonvisible {
 			display: flex !important;
@@ -374,8 +485,12 @@
 			height:40px;
 			}
 			
-			.demo, .organize {
+			.demo, .organize, .credits {
 			display:none;
+			}
+			
+			.mobileonly {
+			display:block;
 			}
 
 			.flipnote {
