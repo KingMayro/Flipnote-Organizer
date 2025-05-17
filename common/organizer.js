@@ -23,7 +23,7 @@
 	
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
-		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon")) {
+		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift")) {
 		  clickDownSound.volume = sfxVolume;
 		  clickDownSound.currentTime = 0;
 		  clickDownSound.play();
@@ -80,15 +80,23 @@
 	}
 
 
+	let shiftEnabled = localStorage.getItem("shiftEnabled");
+	shiftEnabled = shiftEnabled === null ? true : shiftEnabled === "true";
 
-	
+	let digitalShiftenabled = localStorage.getItem("digitalShiftenabled") === "true";
 	let shiftPushed = false;
+	let digitalshifton = false;
+
 	const visibleFlipnotes = new Set();
+
+	const shiftToggle = document.getElementById("shiftToggle");
+	const digitalshifttoggle = document.getElementById("digitalShiftToggle");
+	const digitalshift = document.getElementById("digitalShift");
+	const returnTop = document.getElementById("returnTop");
 
 	function updateCardAltDetails(card, showAlt) {
 	  const flipDets = card.querySelector('.flipdetails');
 	  const detailsDiv = card.querySelector('.altflipdetails');
-	  flipdetailheight();
 
 	  if (showAlt) {
 		if (flipDets) flipDets.style.display = 'none';
@@ -115,14 +123,90 @@
 	  threshold: 0.01
 	});
 
-	//true
-	function watchflipnotes() {
-	  document.querySelectorAll('.flipnote').forEach(card => observer.observe(card));
+	document.querySelectorAll('.flipnote').forEach(card => observer.observe(card));
+
+	function shifttogglechange() {
+	  shiftToggle.classList.toggle("off", !shiftEnabled);
 	}
 
-	watchflipnotes();
+	function digitalshiftchange() {
+	  digitalshifttoggle.classList.toggle("off", !digitalShiftenabled);
+	  digitalshifttoggle.classList.toggle("disabled", !shiftEnabled);
 
-	document.addEventListener('keydown', (e) => {
+	  if (!shiftEnabled) {
+		digitalshift.classList.remove("visible");
+		digitalshift.classList.remove("held");
+		returnTop.classList.remove("shifttopbutton");
+		digitalshifton = false;
+		shiftPushed = false;
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
+		return;
+	  }
+
+	  if (digitalShiftenabled) {
+		digitalshift.classList.add("visible");
+		returnTop.classList.add("shifttopbutton");
+	  } else {
+		digitalshift.classList.remove("visible");
+		returnTop.classList.remove("shifttopbutton");
+		if (digitalshifton) {
+		  digitalshifton = false;
+		  shiftPushed = false;
+		  digitalshift.classList.remove("held");
+		  shiftReleaseSound.volume = sfxVolume;
+		  shiftReleaseSound.currentTime = 0;
+		  shiftReleaseSound.play();
+		  visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
+		}
+	  }
+	}
+
+	// Toggle events
+	shiftToggle.addEventListener("click", () => {
+	  shiftEnabled = !shiftEnabled;
+	  localStorage.setItem("shiftEnabled", shiftEnabled);
+	  shifttogglechange();
+	  digitalshiftchange();
+
+	  if (!shiftEnabled && shiftPushed) {
+		shiftPushed = false;
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
+	  }
+	});
+
+	digitalshifttoggle.addEventListener("click", () => {
+	  if (!shiftEnabled) return;
+
+	  digitalShiftenabled = !digitalShiftenabled;
+	  localStorage.setItem("digitalShiftenabled", digitalShiftenabled);
+	  digitalshiftchange();
+	});
+
+	digitalshift.addEventListener("click", () => {
+	  if (!shiftEnabled || !digitalShiftenabled) return;
+
+	  if (!digitalshifton) {
+		shiftPushed = true;
+		digitalshifton = true;
+		digitalshift.classList.add("held");
+		shiftDownSound.volume = sfxVolume;
+		shiftDownSound.currentTime = 0;
+		shiftDownSound.play();
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, true));
+	  } else {
+		shiftPushed = false;
+		digitalshifton = false;
+		digitalshift.classList.remove("held");
+		shiftReleaseSound.volume = sfxVolume;
+		shiftReleaseSound.currentTime = 0;
+		shiftReleaseSound.play();
+		visibleFlipnotes.forEach(card => updateCardAltDetails(card, false));
+	  }
+	});
+
+	document.addEventListener("keydown", (e) => {
+	  if (!shiftEnabled || digitalShiftenabled) return;
+
 	  if (e.key === 'Shift' && !shiftPushed) {
 		shiftPushed = true;
 		shiftDownSound.volume = sfxVolume;
@@ -132,7 +216,9 @@
 	  }
 	});
 
-	document.addEventListener('keyup', (e) => {
+	document.addEventListener("keyup", (e) => {
+	  if (!shiftEnabled || digitalShiftenabled) return;
+
 	  if (e.key === 'Shift') {
 		shiftPushed = false;
 		shiftReleaseSound.volume = sfxVolume;
@@ -142,7 +228,31 @@
 	  }
 	});
 
+	shifttogglechange();
+	digitalshiftchange();
 
+
+
+	function updateCardAltDetails(card, showAlt) {
+	  const flipDets = card.querySelector('.flipdetails');
+	  const detailsDiv = card.querySelector('.altflipdetails');
+	  flipdetailheight();
+
+	  if (showAlt) {
+		if (flipDets) flipDets.style.display = 'none';
+		if (detailsDiv) detailsDiv.style.display = 'block';
+	  } else {
+		if (flipDets) flipDets.style.display = 'block';
+		if (detailsDiv) detailsDiv.style.display = 'none';
+	  }
+	}
+
+	//true
+	function watchflipnotes() {
+	  document.querySelectorAll('.flipnote').forEach(card => observer.observe(card));
+	}
+
+	watchflipnotes();
 
     const player = document.getElementById("flipnotePlayer");
 	const playerSlider = player.querySelector('flipnote-player-slider');
@@ -728,7 +838,21 @@
 	function isgoodbrowser() {
 	  return navigator.userAgent.toLowerCase().includes("firefox");
 	}
+	
+	function cacabrowser() {
+	  return navigator.userAgent.toLowerCase().includes("iphone");
+	}
 
+	function removesfxvol() {
+	  const menutitlec = document.querySelectorAll(".menutitle");
+	  const sfxvolc = document.querySelectorAll(".sfxvol");
+
+	  if (cacabrowser()) {
+		menutitlec.forEach(el => el.style.display = "none");
+		sfxvolc.forEach(el => el.style.display = "none");
+	  }
+	}
+	
 	function changeinputtext() {
 	  const folderInputBox = document.getElementById("folderinputbox");
 	  
@@ -740,6 +864,7 @@
 	}
 
 	changeinputtext();
+	removesfxvol();
 
 	
 async function handleFolder(files) {

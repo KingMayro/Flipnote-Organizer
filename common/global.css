@@ -139,7 +139,7 @@
 			color: #fb6100;
 			}
 			
-			.dupbutton, #folderSelect, #folderList div, #folderinputbox, #closePlayer, #returnTop, .headerbutton {
+			.dupbutton, #folderSelect, #folderList div, #folderinputbox, #closePlayer, #returnTop, .headerbutton, #digitalShift {
 			cursor:pointer;
 			user-select:none;
 			}
@@ -202,7 +202,7 @@
 			border: solid 2px #fbcb79;
 			}
 			
-			#closePlayer, #returnTop {
+			#closePlayer, #returnTop, #digitalShift {
 			bottom:0;
 			z-index:202;
 			position: fixed;
@@ -214,14 +214,14 @@
 			font-size:18px;
 			}
 			
-			.slide-button {
+			.slidebutton {
 			opacity: 0;
 			transform: translateY(20px);
 			transition: opacity 0.3s ease, transform 0.3s ease;
 			pointer-events:none;
 			}
 			
-			.slide-button.visible {
+			.slidebutton.visible {
 			opacity: 1;
 			transform: translateY(0);
 			pointer-events:auto;
@@ -237,11 +237,24 @@
 			width:85px;
 			}
 			
-			#closePlayer:active, #returnTop:active {
+			.shifttopbutton {
+			right:115px !important;
+			}
+			
+			#digitalShift {
+			right:0;
+			width: 90px;
+			}
+			
+			#closePlayer:active, #returnTop:active, #digitalShift:active, #digitalShift.held {
 			color:#302820;
 			border: solid #302820;
 			border-width:4px 4px 0 4px;
 			padding:6px 6px 10px 6px;
+			}
+			
+			#digitalShift.held {
+			transform: translateY(5px);
 			}
 			
 			#folderSelectWrapper {
@@ -324,7 +337,7 @@
 
 			.sfxvol {
 			width: 88%;
-			margin: 10px 15px;
+			margin: 0 15px;
 			position: relative;
 			display:inline-flex;
 			cursor: pointer;
@@ -350,16 +363,17 @@
 
 			#sfxvolssliderbg {
 			background: white;
-			height: 100%;
+			height: 160%;
 			width: 100%;
 			border-radius: 100px;
+			transform: translateY(-2px);
 			}
 
 			#sfxvolhandle {
-			width: 12px;
-			height: 12px;
+			width: 10px;
+			height: 10px;
 			background: #fb6100;
-			border: solid 4px white;
+			border: solid 6px white;
 			border-radius: 400px;
 			position: absolute;
 			top: 50%;
@@ -397,6 +411,7 @@
 			padding:15px;
 			display: block;
 			transition: ease-in-out 0.2s;
+			user-select:none;
 			}
 
 			.menuop:hover {
@@ -413,20 +428,69 @@
 			display:none;
 			}
 
-			.menutitle {
+			.menutitle, .toggletitle {
 			padding:15px 15px 0;
 			margin:0;
 			color:white;
+			user-select:none;
+			}
+			
+			.toggletitle {
+			padding: 15px !important;
+			flex-grow: 2;
 			}
 
 			.menuhead {
 			color:white;
 			padding: 10px 15px 10px;
 			margin:0;
-			font-size:130%;
+			font-size:140%;
 			border-bottom: solid 4px #ba2000;
 			}
 			
+			.shiftdetails {
+			display: flex;
+			height: 50px;
+			}
+					
+			.togglebutton {
+			width: 48px;
+			height: 28px;
+			cursor: pointer;
+			user-select: none;
+			margin: auto 21px auto 0;
+			}
+
+			.togglebuttrack {
+			background-color: #ba2000;
+			border-radius: 100px;
+			width: 100%;
+			height: 100%;
+			position: relative;
+			transition: ease-in-out 0.2s;
+			padding: auto 0;
+			}
+
+			.togglehandle {
+			background-color: white;
+			border-radius: 100px;
+			width: 24px;
+			height: 24px;
+			position: absolute;
+			top: 2px;
+			left: 22px;
+			transition: ease-in-out 0.2s;
+			}
+
+			.togglebutton.off .togglehandle {
+			background-color:#fbcb79;
+			left: 3px;
+			}
+			
+			.togglebutton.disabled .togglehandle {
+			background-color:#fb6100;
+			}
+
 			
 			@media (max-width: 1000px) {
 			
@@ -448,7 +512,7 @@
 			}
 			
 			
-			@media (max-width: 770px) {
+			@media (max-width: 800px) {
 			
 			.headbuttonvisible {
 			display: flex !important;
@@ -516,14 +580,25 @@
 			font-size: 17px;
 			}
 			
+			#closePlayer, #returnTop, #digitalShift {
+			font-size: 22px;	
+			}
+			
 			#closePlayer {
 			width: 180px;
-			font-size: 22px;
 			}
 			
 			#returnTop {
-			font-size: 22px;
 			width:105px;
+			}
+			
+			.shifttopbutton {
+			right:135px !important;
+			}
+			
+			
+			#digitalShift {
+			width: 110px;
 			}
 			
 			flipnote-player::part(Controls__playButton) {
@@ -574,6 +649,29 @@
 			
 			.dupbutton, #folderSelect, #folderList div {
 			font-size: 16px;
+			}
+			
+			#closePlayer, #returnTop, #digitalShift {
+			font-size: 18px;	
+			}
+			
+			#closePlayer {
+			left:0;
+			width:135px;
+			}
+			
+			#returnTop {
+			right:0;
+			width:85px;
+			}
+			
+			.shifttopbutton {
+			right:115px !important;
+			}
+			
+			#digitalShift {
+			right:0;
+			width: 90px;
 			}
 				
 			}
