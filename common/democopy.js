@@ -1,5 +1,22 @@
 // A lot of this is hacked together just so it barely works enough lol
 
+
+	function cacabrowser() {
+	  return navigator.userAgent.toLowerCase().includes("iphone");
+	}
+
+	function removesfxvol() {
+	  const menutitlec = document.querySelectorAll(".menutitle");
+	  const sfxvolc = document.querySelectorAll(".sfxvol");
+
+	  if (cacabrowser()) {
+		menutitlec.forEach(el => el.style.display = "none");
+		sfxvolc.forEach(el => el.style.display = "none");
+	  }
+	}
+	
+	removesfxvol()
+
 	let whichthumbnail = localStorage.getItem("whichthumbnail");
 	whichthumbnail = whichthumbnail === null ? true : whichthumbnail === "true";
 

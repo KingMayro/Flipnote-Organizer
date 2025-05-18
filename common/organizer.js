@@ -15,6 +15,7 @@
 
 	const buttonSounds = {
 	  thumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
+	  largethumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
 	  returnTop: new Audio("sound/SE_SY_FRAME_RETURN_TOP.wav"),
 	  closePlayer: new Audio("sound/SE_SY_DRAW_TOOL_BTN_OFF.wav"),
 	  folderstufflist: new Audio("sound/SE_SY_POPUP_SELECT.wav")
@@ -23,7 +24,7 @@
 	
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
-		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift")) {
+		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift, .largethumb")) {
 		  clickDownSound.volume = sfxVolume;
 		  clickDownSound.currentTime = 0;
 		  clickDownSound.play();

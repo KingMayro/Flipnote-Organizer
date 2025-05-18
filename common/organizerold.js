@@ -15,6 +15,7 @@
 
 	const buttonSounds = {
 	  thumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
+	  largethumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
 	  returnTop: new Audio("sound/SE_SY_FRAME_RETURN_TOP.wav"),
 	  closePlayer: new Audio("sound/SE_SY_DRAW_TOOL_BTN_OFF.wav"),
 	  folderstufflist: new Audio("sound/SE_SY_POPUP_SELECT.wav")
@@ -23,7 +24,7 @@
 	
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
-		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift")) {
+		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift, .largethumb")) {
 		  clickDownSound.volume = sfxVolume;
 		  clickDownSound.currentTime = 0;
 		  clickDownSound.play();
@@ -842,38 +843,6 @@
 	  }
 	  await handleFolder(files);
 	});
-
-
-	function isgoodbrowser() {
-	  return navigator.userAgent.toLowerCase().includes("firefox");
-	}
-	
-	function cacabrowser() {
-	  return navigator.userAgent.toLowerCase().includes("iphone");
-	}
-
-	function removesfxvol() {
-	  const menutitlec = document.querySelectorAll(".menutitle");
-	  const sfxvolc = document.querySelectorAll(".sfxvol");
-
-	  if (cacabrowser()) {
-		menutitlec.forEach(el => el.style.display = "none");
-		sfxvolc.forEach(el => el.style.display = "none");
-	  }
-	}
-	
-	function changeinputtext() {
-	  const folderInputBox = document.getElementById("folderinputbox");
-	  
-	  if (isgoodbrowser()) {
-		folderInputBox.textContent = "Click or drag and drop a folder in here!!!";
-	  } else {
-		folderInputBox.textContent = "Click here to load a folder!!!";
-	  }
-	}
-
-	changeinputtext();
-	removesfxvol();
 
 	
 async function handleFolder(files) {
