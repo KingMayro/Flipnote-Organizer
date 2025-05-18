@@ -586,29 +586,6 @@
 	changesliderandicon();
 
 	
-	let whichthumbnail = localStorage.getItem("whichthumbnail");
-	whichthumbnail = whichthumbnail === null ? true : whichthumbnail === "true";
-
-	const thumbToggle = document.getElementById("thumbToggle");
-
-	function thumbtogglechange() {
-	  thumbToggle.classList.toggle("off", !whichthumbnail);
-	}
-
-	thumbToggle.addEventListener("click", () => {
-	  whichthumbnail = !whichthumbnail;
-	  localStorage.setItem("whichthumbnail", whichthumbnail);
-	  thumbtogglechange();
-
-	  const hasFolders = globalPpmFilesByFolder && Object.keys(globalPpmFilesByFolder).length > 0;
-	  if (hasFolders && typeof renderFolder === 'function' && typeof currentlySelectedFolder !== 'undefined') {
-		renderFolder(currentlySelectedFolder);
-	  }
-	});
-
-	thumbtogglechange();
-
-	
 	
 	const palette = [
 	  '#FFFFFF', '#525252', '#FFFFFF', '#9C9C9C',
@@ -666,12 +643,10 @@
 
 	let globalPpmFilesByFolder = {};
 	let usingFolders = false;
-	let whotorender = 0;
+
 
 	async function renderFolder(folderName) {
-	currentlySelectedFolder = folderName;
-	const renderjob = ++whotorender;
-	
+	  currentlySelectedFolder = folderName;
 	  showFrog();
   try {
 	
@@ -701,7 +676,7 @@
 		const isSpinoff = currentAuthorId !== parentAuthorId;
 
 		const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
-		
+
 		let thumbnailversion;
 		if (whichthumbnail) {
 		  const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
@@ -737,7 +712,6 @@
 			
 		  </div>
 		`;
-		if (renderjob !== whotorender) return;
 		flipnotesList.appendChild(div);
 		
 
@@ -974,19 +948,11 @@ if (duplicates.length > 0) {
 
       const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
 
-	  let thumbnailversion;
-	  if (whichthumbnail) {
-		const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
-	    thumbnailversion = `<img id="thumb" src="${thumbnailDataUrl}">`;
-	  } else {
-		thumbnailversion = `<flipnote-image src="${URL.createObjectURL(file)}" class="largethumb"></flipnote-image>`;
-	  }
-
         const card = document.createElement("div");
         card.className = "flipnote dupFlex";
 		groupDiv.className = "dupflips";
         card.innerHTML = `
-        ${thumbnailversion}
+          <img id="thumb" src="${thumbnailDataUrl}">
           <div class="">
             <div><b>Creator:</b> ${author}
               <span class="icons">

@@ -35,14 +35,23 @@
 						<!-- <a href="howtouse" class="headerbutton">How to Use</a> -->
 						
 						<p class="menuhead"><b>Settings</b></p>
-						<p class="menutitle">Sound Effects Volume</p>
-						<div class="sfxvol">
+						<p id="#menutitle" class="menutitle">Sound Effects Volume</p>
+						<div id="#sfxvol" class="sfxvol">
 							<img id="sfxvolicon" src="graphics/vol.svg">
 							
 							<div id="sfxvol">
 								<div id="sfxvolslider">
 									<div id="sfxvolssliderbg"></div>
 									<div id="sfxvolhandle"></div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="shiftdetails">
+							<p class="toggletitle">Original Thumbnail Res</p>
+							<div id="thumbToggle" class="togglebutton">
+								<div class="togglebuttrack">
+									<div class="togglehandle"></div>
 								</div>
 							</div>
 						</div>
@@ -105,7 +114,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/flipnote.js@6/dist/flipnote.webcomponent.min.js"></script>
 	<!-- Kinda forgot that the flipnote.js library existed when I started, so I'm just using it for the player. oops -->
 	<script src="common/hamburger.js"></script>
-	<script src="common/organizer.js"></script>
+	<script src="common/organizerold.js"></script>	<!-- I seriously need to rewrite the demo stuff otherwise I gotta do shit like this -->
 	<script src="common/democopy.js"></script> 
 	<!-- the demonstration version works fine enough even -->
 

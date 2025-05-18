@@ -1,5 +1,27 @@
 // A lot of this is hacked together just so it barely works enough lol
 
+	let whichthumbnail = localStorage.getItem("whichthumbnail");
+	whichthumbnail = whichthumbnail === null ? true : whichthumbnail === "true";
+
+	const thumbToggle = document.getElementById("thumbToggle");
+
+	function thumbtogglechange() {
+	  thumbToggle.classList.toggle("off", !whichthumbnail);
+	}
+
+	thumbToggle.addEventListener("click", () => {
+	  whichthumbnail = !whichthumbnail;
+	  localStorage.setItem("whichthumbnail", whichthumbnail);
+	  thumbtogglechange();
+
+	  const hasFolders = globalPpmFilesByFolder && Object.keys(globalPpmFilesByFolder).length > 0;
+	  if (hasFolders && typeof renderFolder === 'function' && typeof currentlySelectedFolder !== 'undefined') {
+		renderFolder(currentlySelectedFolder);
+	  }
+	});
+
+	thumbtogglechange();
+
 	fetch("sampleflipnotes/demofilestructure.json")
 	  .then(res => res.json())
 	  .then(data => handleFolderFromJson(data));
@@ -99,11 +121,19 @@ async function handleFolderFromJson(jsonData) {
 
 		  const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
 
+		let thumbnailversion;
+		if (whichthumbnail) {
+		  const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
+		  thumbnailversion = `<img id="thumb" src="${thumbnailDataUrl}">`;
+		} else {
+		  thumbnailversion = `<flipnote-image src="${URL.createObjectURL(file)}" class="largethumb"></flipnote-image>`;
+		}
+
 			const card = document.createElement("div");
 			card.className = "flipnote dupFlex";
 			groupDiv.className = "dupflips";
 			card.innerHTML = `
-			  <img id="thumb" src="${thumbnailDataUrl}">
+			${thumbnailversion}
 			  <div class="">
 				<div><b>Creator:</b> ${author}
 				  <span class="icons">

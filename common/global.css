@@ -72,21 +72,27 @@
 			width: 330px;
 			}
 			
-			#thumb {
+			#thumb, flipnote-image::part(Image), .largethumb {
 			width: 64px;
 			height: 48px;
+			}
+			
+			#thumb, .largethumb {
 			margin-right: 1rem;
-			image-rendering: pixelated;
 			border: outset 1px #797979;
 			box-shadow: 3px 3px 2px rgba(11, 4, 60, 0.3);
 			cursor:pointer;
+			}
+			
+			flipnote-image::part(Image) {
+			image-rendering:unset;
 			}
 			
 			#thumb, #loadingfrog {
 			image-rendering: pixelated;
 			}		
 
-			#thumb:active {
+			#thumb:active, .largethumb:active {
 			box-shadow: 1px 1px 0px rgba(11, 4, 60, 0.3);
 			transform: scale(0.99) translate(2px, 2px);
 			filter: contrast(1.5);
@@ -271,7 +277,7 @@
 			--flipnote-player-font-family: "Seurat Pro", arial;
 			}
 			
-			.playeractive {
+			.playeractive, #thumb.playeractive {
 			outline: solid 4px blue;
 			border-radius:1px;
 			border:solid 1px blue;
@@ -562,7 +568,7 @@
 			font-size: 122%;
 			}
 
-			#thumb {
+			#thumb, flipnote-image::part(Image), .largethumb {
 			width: 128px;
 			height: 96px;
 			}
@@ -628,7 +634,7 @@
 			font-size: 99%;
 			}
 
-			#thumb {
+			#thumb, flipnote-image::part(Image), .largethumb {
 			width: 96px;
 			height: 72px;
 			}
