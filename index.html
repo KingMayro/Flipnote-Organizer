@@ -21,6 +21,29 @@
 	
 		<body>
 		
+		<div class="frogpopupbox" style="display: none;">
+			<div class="frogboxholder">
+				<img id="froghands" class="froghands" src="graphics/introfrog/hands/froghandsidle.gif">
+				<img id="frogbody" class="frog" src="graphics/introfrog/body/frogidle.gif">
+				
+				<div class="frogpopup">
+				
+				<div>
+					<div class="speechbubblearrow"></div>
+					<div class="speechbubble"><span id="speechbubbletext">Hey there! Welcome to the Flipnote Organizer! Before you get started, would you like to learn the basics of using the organizer?</span></div>
+				</div>
+				
+				<img id="tutorialmain" class="tutorialmain">
+				
+				<div>
+					<div id="popupbut1" class="tutorialbutton">No thanks</div>
+					<div id="popupbut2" class="tutorialbutton right">Sure!</div>
+				</div>
+				
+				</div>
+			</div>
+		</div>
+		
 		<div class="therealheader">
 			<div class="headerbuttongroup">
 				<a href="https://flipnote.famicomcd.org/"><img class="logo" src="graphics/logo.svg"></a>
@@ -103,7 +126,7 @@
 					<div id="folderList" style="display: none;"></div>
 				</div>
 				<div id="dupbutton"></div>
-				<span class="right" id="folderCount"></span>
+				<span class="foldercounter" id="folderCount"></span>
 			</div>
 
 			
@@ -123,6 +146,6 @@
 	<!-- Kinda forgot that the flipnote.js library existed when I started, so I'm just using it for the player. oops -->
 	<script src="common/hamburger.js"></script>
 	<script src="common/organizer.js"></script>
-
+	<script src="common/frogintro.js"></script>
 
 </html>

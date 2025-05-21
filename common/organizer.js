@@ -18,13 +18,18 @@
 	  largethumb: new Audio("sound/SE_SY_CURSOR_MOVE.wav"),
 	  returnTop: new Audio("sound/SE_SY_FRAME_RETURN_TOP.wav"),
 	  closePlayer: new Audio("sound/SE_SY_DRAW_TOOL_BTN_OFF.wav"),
-	  folderstufflist: new Audio("sound/SE_SY_POPUP_SELECT.wav")
+	  folderstufflist: new Audio("sound/SE_SY_POPUP_SELECT.wav"),
+	  prev: new Audio("sound/SE_SY_PAGE_BACKWARD.wav"),
+	  next: new Audio("sound/SE_SY_PAGE_FORWARD.wav"),
+	  sure: new Audio("sound/SE_SY_OK.wav"),
+	  nothanks: new Audio("sound/SE_SY_CANCEL.wav"),
+	  resbut: new Audio("sound/SE_SY_REGULAR_BUTTON.wav")
 	};
 	
 	
 	document.addEventListener("DOMContentLoaded", () => {
 	  document.addEventListener("mousedown", (e) => {
-		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift, .largethumb")) {
+		if (e.target.closest("#thumb, #folderSelect, #returnTop, #closePlayer, .folderstufflist, .dupbutton, .playstateicon, #digitalShift, .largethumb, .tutorialbutton")) {
 		  clickDownSound.volume = sfxVolume;
 		  clickDownSound.currentTime = 0;
 		  clickDownSound.play();
