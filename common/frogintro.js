@@ -147,6 +147,13 @@ const dialogSteps = {
 let currentStep = "1";
 
 document.addEventListener("DOMContentLoaded", () => {
+  Object.values(dialogSteps).forEach(step => {
+    if (step.image) {
+      const img = new Image();
+      img.src = step.image;
+    }
+  });
+	
   if (!localStorage.getItem("infoseen")) {
     const frogPopupBox = document.querySelector(".frogpopupbox");
     if (frogPopupBox) {
