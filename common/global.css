@@ -98,6 +98,21 @@
 			filter: contrast(1.5);
 			}
 			
+			.flipnumber {
+			position: absolute;
+			font-size: 10px;
+			transform: translate(43px,-17px);
+			z-index:20;
+			-webkit-text-stroke: 3px white;
+			text-stroke: 3px white;
+			paint-order: stroke fill;
+			pointer-events:none;
+			}
+			
+			.flipnote:has(#thumb:active:not(.playeractive)) .flipnumber, .flipnote:has(.largethumb:active:not(.playeractive)) .flipnumber {
+			transform: scale(0.99) translate(45px, -15px);
+			}
+
 			#flipnotesListHeader {
 			text-align:center;
 			margin-top: 10px;
@@ -145,7 +160,7 @@
 			color: #fb6100;
 			}
 			
-			.dupbutton, #folderSelect, #folderList div, #folderinputbox, #closePlayer, #returnTop, .headerbutton, #digitalShift, .tutorialbutton {
+			.dupbutton, #folderSelect, #folderList div, #folderinputbox, #closePlayer, #returnTop, .headerbutton, #digitalShift, .tutorialbutton, .flipnthumbnail, #thumb, .flipnumber {
 			cursor:pointer;
 			user-select:none;
 			}
@@ -281,7 +296,9 @@
 			outline: solid 4px blue;
 			border-radius:1px;
 			border:solid 1px blue;
+			box-shadow:none !important;
 			}
+
 			
 			.playeractive:active {
 			box-shadow:none !important;
@@ -404,7 +421,7 @@
 			background-color: #fb6100;
 			border:solid 4px #ba2000;
 			border-radius: 10px;
-			width: 300px;
+			width: 315px;
 			display: none;
 			z-index: 300;
 			}
@@ -632,6 +649,10 @@
 			pointer-events:none !important;
 			}
 			
+			.autoheight {
+			height:auto !important;	
+			}
+
 			@media (max-width: 1000px) {
 			
 			.showflipnotes {
@@ -670,7 +691,6 @@
 			.rounded {
 			border: solid 4px #ba2000;
 			height: auto !important;
-			
 			}
 			
 			.large {
@@ -794,6 +814,13 @@
 			.dupflips {
 			width:98%;
 			}
+			
+			.flipnumber {
+			font-size: 16px;
+			transform: translate(92px, -37px);
+			-webkit-text-stroke: 5px white;
+			text-stroke: 5px white;
+			}
 
 			
 			}
@@ -851,5 +878,12 @@
 			right:0;
 			width: 90px;
 			}
-				
+			
+			.flipnumber {
+			font-size: 14px;
+			transform: translate(65px, -26px);
+			-webkit-text-stroke: 4px white;
+			text-stroke: 4px white;
+			}
+
 			}

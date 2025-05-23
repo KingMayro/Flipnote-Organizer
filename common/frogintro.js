@@ -58,10 +58,10 @@ const dialogSteps = {
   },
 "7": {
   text: "Would you like to see original resolution thumbnails or high resolution ones? High resolution ones offer better readability and vibrancy; they're preferable on mobile.",
-  image: "graphics/introfrog/thumbvhigh.png", imageClass: "medium",
+  image: "graphics/introfrog/thumbvhigh.png", imageClass: "medium autoheight",
   buttons: [
     {
-      text: "Original Res", next: "8", class: "resbut", target: "popupbut1",
+      text: "Original Res", next: "7a", class: "resbut", target: "popupbut1",
       settingEffect: () => {
         whichthumbnail = true;
         localStorage.setItem("whichthumbnail", whichthumbnail);
@@ -69,11 +69,33 @@ const dialogSteps = {
       }
     },
     {
-      text: "High Res", next: "8", class: "resbut", target: "popupbut2",
+      text: "High Res", next: "7a", class: "resbut", target: "popupbut2",
       settingEffect: () => {
         whichthumbnail = false;
         localStorage.setItem("whichthumbnail", whichthumbnail);
         thumbtogglechange();
+      }
+    }
+  ]
+},
+"7a": {
+  text: "Would you like to have your Flipnotes sorted alphabetically by filename, or like how Flipnote Studio sorts Flipnotes?",
+  image: "graphics/introfrog/sortlikedsi.png", imageClass: "large rounded",
+  buttons: [
+    {
+      text: "Alphabetical", next: "8", class: "resbut", target: "popupbut1",
+      settingEffect: () => {
+        usefnsort = false;
+        localStorage.setItem("usefnsort", usefnsort);
+        fnSortTogglechange();
+      }
+    },
+    {
+      text: "Like on DSi", next: "8", class: "resbut", target: "popupbut2",
+      settingEffect: () => {
+        usefnsort = true;
+        localStorage.setItem("usefnsort", usefnsort);
+        fnSortTogglechange();
       }
     }
   ]

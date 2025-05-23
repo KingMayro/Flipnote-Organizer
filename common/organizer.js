@@ -613,8 +613,30 @@
 	});
 
 	thumbtogglechange();
-
 	
+	
+	let usefnsort = localStorage.getItem("usefnsort");
+	usefnsort = usefnsort === null ? false : usefnsort === "true";
+
+	const fnSortToggle = document.getElementById("fnSortToggle");
+
+	function fnSortTogglechange() {
+	  fnSortToggle.classList.toggle("off", !usefnsort);
+	}
+
+	fnSortToggle.addEventListener("click", async () => {
+	  usefnsort = !usefnsort;
+	  localStorage.setItem("usefnsort", usefnsort);
+	  fnSortTogglechange();
+
+	  await setFnSorting();
+	  if (typeof renderFolder === 'function' && typeof currentlySelectedFolder !== 'undefined') {
+		renderFolder(currentlySelectedFolder);
+	  }
+	});
+
+	fnSortTogglechange();
+
 	
 	const palette = [
 	  '#FFFFFF', '#525252', '#FFFFFF', '#9C9C9C',
@@ -668,11 +690,42 @@
 	  return [...data.slice(offset, offset + 8)].reverse().map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
 	}
 
+	const dirmemokey = [
+	  0xF7, 0x4C, 0x6A, 0x3A, 0xFB, 0x82, 0xA6, 0x37,
+	  0x6E, 0x11, 0x38, 0xCF, 0xA0, 0xDD, 0x85, 0xC0,
+	  0xC7, 0x9B, 0xC4, 0xD8, 0xDD, 0x28, 0x8A, 0x87,
+	  0x53, 0x20, 0xEE, 0xE0, 0x0B, 0xEB, 0x43, 0xA0,
+	  0xDB, 0x55, 0x0F, 0x75, 0x36, 0x37, 0xEB, 0x35,
+	  0x6A, 0x34, 0x7F, 0xB5, 0x0F, 0x99, 0xF7, 0xEF,
+	  0x43, 0x25, 0xCE, 0xA0, 0x29, 0x46, 0xD9, 0xD4,
+	  0x4D, 0xBB, 0x04, 0x66, 0x68, 0x08, 0xF1, 0xF8
+	];
+	
+	
+	async function readdirmemo(file) {
+	  const arrayBuffer = await file.arrayBuffer();
+	  const encrypted = new Uint8Array(arrayBuffer);
+
+	  const decrypted = new Uint8Array(encrypted.length);
+	  for (let i = 0; i < encrypted.length; i++) {
+		decrypted[i] = encrypted[i] ^ dirmemokey[i % dirmemokey.length];
+	  }
+
+	  const decodedText = new TextDecoder("utf-8").decode(decrypted);
+	  return decodedText
+		.trim()
+		.split("\n")
+		.map(name => name.trim())
+		.filter(name => name.length > 0);
+	}
+
+
 
 
 	let globalPpmFilesByFolder = {};
 	let usingFolders = false;
 	let whotorender = 0;
+	let flipnoteNumber = "";
 
 	async function renderFolder(folderName) {
 	currentlySelectedFolder = folderName;
@@ -680,8 +733,11 @@
 	
 	  showFrog();
   try {
-	
-	  const files = globalPpmFilesByFolder[folderName];
+	  const files = globalPpmFilesByFolder[folderName].filter(file => file.name.toLowerCase().endsWith(".ppm"));
+      if (!usefnsort || folderName === "All Flipnotes") {
+        files.sort((a, b) => a.name.localeCompare(b.name));
+      }
+	  
 	  const flipnotesList = document.getElementById("flipnotesList");
 	  const header = document.getElementById("flipnotesListHeader");
 	  flipnotesList.innerHTML = "";
@@ -690,7 +746,9 @@
 		<p class="nomargin"><b>${files.length}</b> Flipnotes</p>
 	  `;
 
-	  for (const file of files) {
+	  const showFlipnoteNumber = usefnsort && folderName !== "All Flipnotes";
+	  for (let i = 0; i < files.length; i++) {
+		const file = files[i];
 		const arrayBuffer = await file.arrayBuffer();
 		const data = new Uint8Array(arrayBuffer);
 
@@ -708,6 +766,14 @@
 
 		const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
 		
+		let flipnoteNumber = "";
+		if (folderName !== "All Flipnotes") {
+		  const index = files.indexOf(file);
+		  if (index !== -1 && index < 100) {
+			flipnoteNumber = `${String(index + 1).padStart(3, "0")}`;
+		  }
+		}
+		
 		let thumbnailversion;
 		if (whichthumbnail) {
 		  const thumbnailDataUrl = decodeThumbnail(arrayBuffer);
@@ -719,6 +785,7 @@
 		const div = document.createElement("div");
 		div.className = "flipnote";
 		div.innerHTML = `
+		<span class="flipnumber">${showFlipnoteNumber ? (i + 1).toString().padStart(3, "0") : ""}</span>
 		${thumbnailversion}
 		  <div>
 			<div><b>Creator:</b> ${author}
@@ -907,28 +974,67 @@
 	changeinputtext();
 	removesfxvol();
 
+
+async function setFnSorting() {
+  if (!usefnsort) {
+    for (const folder in globalPpmFilesByFolder) {
+      globalPpmFilesByFolder[folder].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return;
+  }
+
+  for (const folder in globalPpmFilesByFolder) {
+    if (folder === "All Flipnotes") continue;
+
+    const filesInFolder = globalPpmFilesByFolder[folder];
+    const dirmemofile = filesInFolder.find(f => f.name.toLowerCase() === "dirmemo2.lst");
+
+    if (!dirmemofile) {
+      filesInFolder.sort((a, b) => a.name.localeCompare(b.name));
+      continue;
+    }
+
+    try {
+      const dirmemofilenames = await readdirmemo(dirmemofile);
+      const fileMap = new Map(filesInFolder.map(f => [f.name.toLowerCase(), f]));
+      const sorted = dirmemofilenames
+        .map(name => fileMap.get(name.toLowerCase()))
+        .filter(Boolean);
+      const extras = filesInFolder.filter(f => !dirmemofilenames.includes(f.name));
+      globalPpmFilesByFolder[folder] = [...sorted, ...extras];
+    } catch (err) {
+      console.error(`Error reading dirmemo2.lst for folder ${folder}:`, err);
+      filesInFolder.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }
+}
+
 	
 async function handleFolder(files) {
   const rootDirName = files[0].webkitRelativePath.split("/")[0];
   globalPpmFilesByFolder = {};
-  files.sort((a, b) => a.name.localeCompare(b.name));
   usingFolders = rootDirName.startsWith("4B4755");
 
   const filenameMap = {};
 
   for (const file of files) {
-    if (!file.name.toLowerCase().endsWith(".ppm")) continue;
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".ppm") && !lower.endsWith(".lst")) continue;
+
     const pathParts = file.webkitRelativePath.split("/");
     const folder = usingFolders ? pathParts[1] : "no_folder";
 
     if (!globalPpmFilesByFolder[folder]) globalPpmFilesByFolder[folder] = [];
     globalPpmFilesByFolder[folder].push(file);
 
-    const nameKey = file.name.toLowerCase();
-    if (!filenameMap[nameKey]) filenameMap[nameKey] = [];
-    filenameMap[nameKey].push({ file, folder });
+    if (lower.endsWith(".ppm")) {
+      if (!filenameMap[lower]) filenameMap[lower] = [];
+      filenameMap[lower].push({ file, folder });
+    }
   }
-  
+
+  await setFnSorting();
+
 
 document.getElementById("flipnotesList").classList.add("flipnotesList");
 
