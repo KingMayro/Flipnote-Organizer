@@ -348,6 +348,7 @@
 			position:relative;
 			border-bottom: solid 4px #ba2000;
 			padding: 15px 0;
+			width:100%;
 			}
 			
 			.logo {
@@ -421,7 +422,7 @@
 			background-color: #fb6100;
 			border:solid 4px #ba2000;
 			border-radius: 10px;
-			width: 315px;
+			width: 320px;
 			display: none;
 			z-index: 300;
 			}
@@ -648,10 +649,6 @@
 			.donttouchie {
 			pointer-events:none !important;
 			}
-			
-			.autoheight {
-			height:auto !important;	
-			}
 
 			@media (max-width: 1000px) {
 			
@@ -705,6 +702,10 @@
 			
 			.small {
 			height:140px;
+			}
+			
+			.autoheight {
+			height:auto !important;	
 			}
 			
 			}

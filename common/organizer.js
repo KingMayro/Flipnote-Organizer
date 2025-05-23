@@ -10,7 +10,7 @@
 	const dupListCloseSound = new Audio("sound/SE_SY_FRAME_RETURN.wav");
 	const shiftDownSound = new Audio('sound/SE_SY_SHIFT_MODE_ON.wav');
 	const shiftReleaseSound = new Audio('sound/SE_SY_SHIFT_MODE_OFF.wav');
-
+	const frogcroak = new Audio('sound/introfrog/frog1.wav');
 
 
 	const buttonSounds = {
@@ -636,7 +636,60 @@
 	});
 
 	fnSortTogglechange();
+	
+	
+	
+	let sudoeq = localStorage.getItem("sudoeq");
+	sudoeq = sudoeq === null ? false : sudoeq === "true";
 
+	const sudoEQToggle = document.getElementById("sudoEQToggle");
+
+	function sudoEQTogglechange() {
+	  sudoEQToggle.classList.toggle("off", !sudoeq);
+	  if (typeof player !== "undefined" && typeof player.setAudioEq === "function") {
+		player.setAudioEq(sudoeq);
+	  }
+	}
+
+	sudoEQToggle.addEventListener("click", async () => {
+	  sudoeq = !sudoeq;
+	  localStorage.setItem("sudoeq", sudoeq);
+	  sudoEQTogglechange();
+	});
+
+	sudoEQTogglechange();
+
+
+	let fixedheader = localStorage.getItem("fixedheader");
+	fixedheader = fixedheader === null ? false : fixedheader === "true";
+
+	const fixHeaderToggle = document.getElementById("fixHeaderToggle");
+
+	function headerToggleChange() {
+	  fixHeaderToggle.classList.toggle("off", !fixedheader);
+
+	  const therealheader = document.querySelector(".therealheader");
+	  const theheader = document.querySelector(".header");
+	  if (therealheader) {
+		if (fixedheader) {
+		  therealheader.style.position = "fixed";
+		  theheader.style.paddingTop = "106px";
+		} else {
+		  therealheader.style.position = "";
+		  theheader.style.paddingTop = "";
+		}
+	  }
+	}
+
+	fixHeaderToggle.addEventListener("click", () => {
+	  fixedheader = !fixedheader;
+	  localStorage.setItem("fixedheader", fixedheader);
+	  headerToggleChange();
+	});
+
+	headerToggleChange();
+
+	
 	
 	const palette = [
 	  '#FFFFFF', '#525252', '#FFFFFF', '#9C9C9C',
@@ -1236,3 +1289,30 @@ function truncateFolderName(name, maxLength) {
 
 
 }
+
+
+	let frogclicked = 0;
+	let viewdevsettings = localStorage.getItem("viewdevsettings") === "true";
+
+	const loadingFrog = document.getElementById("loadingfrog");
+	const potentialsettings = document.getElementById("potentialsettings");
+
+	function showdevsettings() {
+	  if (potentialsettings) {
+		potentialsettings.style.display = viewdevsettings ? "unset" : "none";
+	  }
+	}
+
+	loadingFrog.addEventListener("click", () => {
+	  frogclicked++;
+	  if (frogclicked >= 10) {
+		frogclicked = 0;
+		frogcroak.currentTime = 0;
+		frogcroak.play();
+		viewdevsettings = !viewdevsettings;
+		localStorage.setItem("viewdevsettings", viewdevsettings);
+		showdevsettings();
+	  }
+	});
+
+	showdevsettings();
