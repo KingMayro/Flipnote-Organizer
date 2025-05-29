@@ -423,6 +423,7 @@
 	let offsetX, offsetY;
 	let initialX, initialY;
 	const moveThreshold = 5;
+	const playerId = 'flipnote-player';
 
 	function getEventCoords(e) {
 	  if (e.touches && e.touches.length > 0) {
@@ -432,12 +433,58 @@
 	  }
 	}
 
+	function clampPosition(x, y, width, height) {
+	  const padding = 120;
+	  const maxX = window.innerWidth - padding;
+	  const maxY = window.innerHeight - padding;
+
+	  const clampedX = Math.min(Math.max(x, -width + padding), maxX);
+	  const clampedY = Math.min(Math.max(y, -height + padding), maxY);
+
+	  return { x: clampedX, y: clampedY };
+	}
+
+	function savePlayerPosition() {
+	  const rect = player.getBoundingClientRect();
+	  localStorage.setItem(`${playerId}-position`, JSON.stringify({
+		left: rect.left,
+		top: rect.top
+	  }));
+	}
+
+	function loadPlayerPosition() {
+	  const saved = localStorage.getItem(`${playerId}-position`);
+	  const rect = player.getBoundingClientRect();
+
+	  if (saved) {
+		const { left, top } = JSON.parse(saved);
+		const { x, y } = clampPosition(left, top, rect.width, rect.height);
+
+		const offScreen = (x !== left || y !== top);
+		if (offScreen) {
+		  centerPlayer();
+		} else {
+		  player.style.left = `${x}px`;
+		  player.style.top = `${y}px`;
+		}
+	  } else {
+		centerPlayer();
+	  }
+	}
+
+	function centerPlayer() {
+	  const rect = player.getBoundingClientRect();
+	  const centerX = (window.innerWidth - rect.width) / 2;
+	  const centerY = (window.innerHeight - rect.height) / 2;
+	  player.style.left = `${centerX}px`;
+	  player.style.top = `${centerY}px`;
+	}
+
 	function startDrag(e) {
 	  const path = e.composedPath ? e.composedPath() : (e.path || []);
 	  const interactingWithSlider = path.some(el =>
 		el.tagName && el.tagName.toLowerCase() === 'flipnote-player-slider'
 	  );
-
 	  if (interactingWithSlider) return;
 
 	  const coords = getEventCoords(e);
@@ -459,8 +506,14 @@
 	  const deltaX = coords.x - initialX;
 	  const deltaY = coords.y - initialY;
 
-	  player.style.left = `${coords.x - offsetX}px`;
-	  player.style.top = `${coords.y - offsetY}px`;
+	  let newX = coords.x - offsetX;
+	  let newY = coords.y - offsetY;
+
+	  const rect = player.getBoundingClientRect();
+	  const { x, y } = clampPosition(newX, newY, rect.width, rect.height);
+
+	  player.style.left = `${x}px`;
+	  player.style.top = `${y}px`;
 
 	  if (Math.abs(deltaX) > moveThreshold || Math.abs(deltaY) > moveThreshold) {
 		player.style.pointerEvents = 'none';
@@ -475,7 +528,15 @@
 	  if (isDragging) {
 		player.style.pointerEvents = 'auto';
 		isDragging = false;
+		savePlayerPosition();
 	  }
+	}
+
+	function keepPlayerInView() {
+	  const rect = player.getBoundingClientRect();
+	  const { x, y } = clampPosition(rect.left, rect.top, rect.width, rect.height);
+	  player.style.left = `${x}px`;
+	  player.style.top = `${y}px`;
 	}
 
 	player.addEventListener('mousedown', startDrag);
@@ -485,6 +546,13 @@
 	player.addEventListener('touchstart', startDrag, { passive: false });
 	document.addEventListener('touchmove', onDrag, { passive: false });
 	document.addEventListener('touchend', stopDrag);
+
+	window.addEventListener('resize', () => {
+	  keepPlayerInView();
+	  savePlayerPosition();
+	});
+
+	window.addEventListener('DOMContentLoaded', loadPlayerPosition);
 
 
 
